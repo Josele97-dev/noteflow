@@ -1,50 +1,139 @@
-# Welcome to your Expo app 👋
+# 📱 NoteFlow
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Gestor de notas moderno y minimalista construido con **Expo**, **React
+Native**, **Zustand**, **FlashList** y **Expo Router**.\
+Diseñado para ser rápido, fluido y extremadamente claro, con animaciones
+suaves y persistencia local.
 
-## Get started
+------------------------------------------------------------------------
 
-1. Install dependencies
+## ✨ Descripción
 
-   ```bash
-   npm install
-   ```
+NoteFlow organiza la información en tres tipos de contenido:
 
-2. Start the app
+-   📝 **Notas** --- texto libre\
+-   ☑️ **Checklists** --- listas de tareas\
+-   💡 **Ideas** --- notas rápidas con etiquetas y color
 
-   ```bash
-   npx expo start
-   ```
+------------------------------------------------------------------------
 
-In the output, you'll find options to open the app in a
+## ✨ Características principales
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### 🧩 Tipos de contenido
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+#### 📝 Notas
 
-## Get a fresh project
+-   Título, contenido y fecha\
+-   Vista de detalle\
+-   Eliminación con confirmación\
+-   Feedback háptico
 
-When you're ready, run:
+#### ☑️ Checklists
 
-```bash
-npm run reset-project
+-   Items marcables\
+-   Barra de progreso\
+-   Vibración al completar tareas
+
+#### 💡 Ideas
+
+-   Etiquetas dinámicas\
+-   Color personalizado\
+-   Organización visual rápida
+
+------------------------------------------------------------------------
+
+## ⚡ Rendimiento
+
+-   FlashList en todas las pantallas\
+-   Optimización para +50 elementos sin pérdida de FPS\
+-   Re-render controlado
+
+------------------------------------------------------------------------
+
+## 🎨 UI / UX
+
+-   Tema claro y oscuro automático\
+-   Sistema de tokens en `constants/theme.ts`\
+-   Animaciones imperativas con Reanimated\
+-   Interacciones con feedback háptico
+
+------------------------------------------------------------------------
+
+## 🧠 Estado global
+
+-   Zustand como store principal\
+-   Persistencia con AsyncStorage\
+-   Rehidratación automática
+
+------------------------------------------------------------------------
+
+## 🧭 Navegación
+
+-   Expo Router\
+-   Tabs como navegación principal\
+-   Rutas dinámicas `[id].tsx`\
+-   Pantalla modal para creación
+
+------------------------------------------------------------------------
+
+## 📘 Documentación
+
+-   `idea.md` → concepto del proyecto\
+-   `project-management.md` → organización en Trello\
+-   `ai-setup.md` → herramientas de IA\
+-   `react-native-teoria.md` → teoría de animaciones y rendimiento
+
+------------------------------------------------------------------------
+
+## 📌 Tablero de Trello
+
+👉 https://trello.com/TU_ENLACE_AQUI
+
+------------------------------------------------------------------------
+
+## 🎞️ Animaciones
+
+Se utilizan animaciones imperativas con Reanimated:
+
+-   useSharedValue\
+-   useAnimatedStyle\
+-   withTiming
+
+### Beneficios:
+
+-   Control total de entrada/salida\
+-   Evita parpadeo en Android\
+-   Mejor rendimiento con listas largas
+
+------------------------------------------------------------------------
+
+## 🛠️ Tecnologías
+
+-   Expo SDK 55\
+-   React Native 0.76\
+-   Expo Router\
+-   Zustand + persist\
+-   AsyncStorage\
+-   FlashList\
+-   Reanimated 3\
+-   Zod\
+-   Expo Haptics\
+-   TypeScript
+
+------------------------------------------------------------------------
+
+## 📦 Instalación
+
+``` bash
+git clone https://github.com/TU_ENLACE/noteflow.git
+cd noteflow
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+------------------------------------------------------------------------
 
-## Learn more
 
-To learn more about developing your project with Expo, look at the following resources:
+## 📝 Licencia
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Proyecto académico --- uso libre educativo.

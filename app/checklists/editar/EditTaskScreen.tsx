@@ -1,0 +1,230 @@
+import { FadeInDown } from '@/components/animations/FadeInDown';
+import * as Haptics from 'expo-haptics';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import {
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../../../constants/theme';
+import { useNotesStore } from '../../../store/notesStore';
+
+import Animated, {
+    runOnJS,
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
+} from 'react-native-reanimated';
+
+type Subtarea = {
+  id: string;
+  text: string;
+  isCompleted: boolean;
+};
+
+export default function EditTaskScreen() {
+  const { id } = useLocalSearchParams();
+  const router = useRouter();
+  const theme = useTheme();
+
+  const { checklists, updateChecklist } = useNotesStore();
+
+  const task = checklists.find((c) => c.id === id);
+
+  const [title, setTitle] = useState(task?.title ?? '');
+  const [subtareas, setSubtareas] = useState<Subtarea[]>(task?.items ?? []);
+
+  // Animación de entrada
+  const opacity = useSharedValue(0);
+  const translateY = useSharedValue(10);
+
+  const animStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  useEffect(() => {
+    opacity.value = withTiming(1, { duration: 300 });
+    translateY.value = withTiming(0, { duration: 300 });
+  }, []);
+
+  if (!task) return null;
+
+  const hasEmptySubtarea = subtareas.some((s) => s.text.trim().length === 0);
+
+  const createSubtarea = (): Subtarea => ({
+    id: Math.random().toString(),
+    text: '',
+    isCompleted: false,
+  });
+
+  const updateText = (idSub: string, text: string) => {
+    setSubtareas((prev) =>
+      prev.map((s) => (s.id === idSub ? { ...s, text } : s))
+    );
+  };
+
+  const handleBlur = (idSub: string) => {
+    setSubtareas((prev) =>
+      prev.filter((s) => !(s.id === idSub && s.text.trim() === ''))
+    );
+  };
+
+  const addSubtarea = () => {
+    if (hasEmptySubtarea) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      return;
+    }
+    setSubtareas((prev) => [...prev, createSubtarea()]);
+  };
+
+  // Animación de salida + guardar
+  const save = async () => {
+    if (!title.trim()) return;
+
+    const cleaned = subtareas.filter((s) => s.text.trim().length > 0);
+
+    updateChecklist(task.id, {
+      title,
+      items: cleaned,
+    });
+
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    opacity.value = withTiming(0, { duration: 220 });
+    translateY.value = withTiming(15, { duration: 220 }, () => {
+      runOnJS(router.back)();
+    });
+  };
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <Stack.Screen options={{ headerShown: false }} />
+
+      <Animated.View style={[{ flex: 1 }, animStyle]}>
+        <ScrollView contentContainerStyle={{ padding: 20 }}>
+          
+          <Text style={[styles.header, { color: theme.text }]}>
+            Editar tarea
+          </Text>
+
+          <Text style={[styles.label, { color: theme.textSecondary }]}>
+            Título
+          </Text>
+
+          <TextInput
+            value={title}
+            onChangeText={setTitle}
+            placeholder="Título de la tarea"
+            placeholderTextColor={theme.textSecondary}
+            style={[
+              styles.titleInput,
+              { color: theme.text, backgroundColor: theme.card }
+            ]}
+          />
+
+          <Text style={[styles.label, { color: theme.textSecondary }]}>
+            Subtareas
+          </Text>
+
+          {subtareas.map((sub) => (
+            <FadeInDown key={sub.id}>
+              <TextInput
+                value={sub.text}
+                onChangeText={(text) => updateText(sub.id, text)}
+                onBlur={() => handleBlur(sub.id)}
+                placeholder="Subtarea..."
+                placeholderTextColor={theme.textSecondary}
+                style={[
+                  styles.input,
+                  { color: theme.text, backgroundColor: theme.card }
+                ]}
+              />
+            </FadeInDown>
+          ))}
+
+          <TouchableOpacity
+            style={[
+              styles.addBtn,
+              {
+                borderColor: theme.border,
+                opacity: hasEmptySubtarea ? 0.4 : 1,
+              },
+            ]}
+            disabled={hasEmptySubtarea}
+            onPress={addSubtarea}
+          >
+            <Text style={{ color: theme.text }}>
+              + Añadir subtarea
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.saveBtn, { backgroundColor: theme.primary }]}
+            onPress={save}
+          >
+            <Text style={styles.saveText}>Guardar cambios</Text>
+          </TouchableOpacity>
+
+        </ScrollView>
+      </Animated.View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+
+  header: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 20,
+  },
+
+  label: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginTop: 10,
+    marginBottom: 8,
+  },
+
+  titleInput: {
+    padding: 16,
+    borderRadius: 14,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 20,
+  },
+
+  input: {
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+
+  addBtn: {
+    padding: 12,
+    borderWidth: 1,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+
+  saveBtn: {
+    marginTop: 20,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+
+  saveText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+});

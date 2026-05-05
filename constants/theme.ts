@@ -1,53 +1,66 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+import { useColorScheme } from 'react-native';
 
-import { Platform } from 'react-native';
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
-export const Colors = {
+export const colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    primary: '#6C63FF',
+    background: '#f5f5f5',
+    card: '#ffffff',
+    text: '#1a1a1a',
+    textSecondary: '#666666',
+    textTertiary: '#999999',
+    border: '#eeeeee',
+    danger: '#ff4444',
+    success: '#4CAF50',
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    primary: '#8B85FF',
+    background: '#121212',
+    card: '#1e1e1e',
+    text: '#ffffff',
+    textSecondary: '#aaaaaa',
+    textTertiary: '#666666',
+    border: '#333333',
+    danger: '#ff6666',
+    success: '#66BB6A',
   },
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
+export const typography = {
+  sizes: {
+    xs: 12,
+    sm: 13,
+    md: 16,
+    lg: 18,
+    xl: 24,
+    xxl: 32,
   },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
+  weights: {
+    regular: '400' as const,
+    medium: '500' as const,
+    semibold: '600' as const,
+    bold: '700' as const,
   },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+};
+
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+};
+
+export const borderRadius = {
+  sm: 8,
+  md: 12,
+  lg: 20,
+  full: 999,
+};
+
+
+export type Theme = typeof colors.light;
+
+export function useTheme(): Theme {
+  const scheme = useColorScheme() ?? 'light'; 
+  return scheme === 'dark' ? colors.dark : colors.light;
+}

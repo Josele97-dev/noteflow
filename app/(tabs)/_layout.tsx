@@ -1,35 +1,56 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { Tabs, useRouter } from 'expo-router';
+import { TouchableOpacity } from 'react-native';
+import { useTheme } from '../../constants/theme';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+type Tab = {
+  name: string;
+  title: string;
+  tipo?: string;
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+};
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+const TABS: Tab[] = [
+  { name: 'notas',      title: 'Notas',      tipo: 'nota',  icon: 'document-text-outline' },
+  { name: 'checklists', title: 'Tareas',     tipo: 'tarea', icon: 'checkbox-outline'      },
+  { name: 'ideas',      title: 'Ideas',      tipo: 'idea',  icon: 'bulb-outline'          },
+  { name: 'archivados', title: 'Archivados',               icon: 'archive-outline'        },
+];
+
+export default function TabsLayout() {
+  const router = useRouter();
+  const { card, text, border, primary, textTertiary } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
+        headerStyle: { backgroundColor: card },
+        headerTitleStyle: { color: text },
+        tabBarStyle: { backgroundColor: card, borderTopColor: border },
+        tabBarActiveTintColor: primary,
+        tabBarInactiveTintColor: textTertiary,
+      }}
+    >
+      {TABS.map(({ name, title, tipo, icon }) => (
+        <Tabs.Screen
+          key={name}
+          name={name}
+          options={{
+            title,
+            tabBarIcon: ({ color, size }) => <Ionicons name={icon} size={size} color={color} />,
+            headerRight: tipo
+              ? () => (
+                  <TouchableOpacity
+                    onPress={() => router.push(`/nueva-nota?tipo=${tipo}` as any)}
+                    style={{ marginRight: 16 }}
+                  >
+                    <Ionicons name="add-circle-outline" size={28} color={primary} />
+                  </TouchableOpacity>
+                )
+              : undefined,
+          }}
+        />
+      ))}
     </Tabs>
   );
 }
