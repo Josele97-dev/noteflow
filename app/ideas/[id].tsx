@@ -8,7 +8,9 @@ import { useTheme } from '../../constants/theme';
 import { useNotesStore } from '../../store/notesStore';
 
 export default function IdeaDetalle() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string }>();
+  const id = params.id as string;
+
   const router = useRouter();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -27,29 +29,33 @@ export default function IdeaDetalle() {
     year: 'numeric',
   });
 
-  const confirmar = (titulo: string, mensaje: string, accion: () => void) => {
+  function confirmar(titulo: string, mensaje: string, accion: () => void) {
     Alert.alert(titulo, mensaje, [
       { text: 'Cancelar', style: 'cancel' },
-      { text: titulo, style: titulo === 'Eliminar' ? 'destructive' : 'default', onPress: accion },
+      {
+        text: titulo,
+        style: titulo === 'Eliminar' ? 'destructive' : 'default',
+        onPress: accion,
+      },
     ]);
-  };
+  }
 
   const eliminar = () =>
     confirmar('Eliminar', '¿Seguro que quieres eliminar esta idea?', () => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      deleteIdea(id!);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); // vibración al confirmar
+      deleteIdea(id);
       router.back();
     });
 
   const archivar = () =>
     confirmar('Archivar', '¿Quieres archivar esta idea?', () => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      archiveIdea(id!);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al confirmar
+      archiveIdea(id);
       router.back();
     });
 
   const editar = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al pulsar
 
     router.push({
       pathname: '/ideas/editar/EditIdeaScreen',
@@ -66,7 +72,7 @@ export default function IdeaDetalle() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <FadeInDown duration={400} offset={-30} delay={0}>
+        <FadeInDown duration={400} offset={-30}>
           <Text style={[styles.fecha, { color: 'rgba(0,0,0,0.4)' }]}>{fecha}</Text>
         </FadeInDown>
 
@@ -93,27 +99,36 @@ export default function IdeaDetalle() {
 
       <FadeInDown duration={400} offset={-30} delay={300 + baseDelay}>
         <View style={[styles.actions, { paddingBottom: insets.bottom + 12 }]}>
-          
-          {/* EDITAR (igual estilo que archivar) */}
+
+          {/* EDITAR */}
           <TouchableOpacity
             style={[styles.btn, { backgroundColor: 'rgba(0,0,0,0.15)' }]}
-            onPress={editar}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al pulsar
+              editar();
+            }}
           >
             <Text style={styles.btnText}>Editar</Text>
           </TouchableOpacity>
 
-          {/* ARCHIVAR */}
+          {/* ARCHIVAR — vibración al pulsar + vibración al confirmar */}
           <TouchableOpacity
             style={[styles.btn, { backgroundColor: 'rgba(0,0,0,0.15)' }]}
-            onPress={archivar}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al pulsar
+              archivar(); // vibración al confirmar
+            }}
           >
             <Text style={styles.btnText}>Archivar</Text>
           </TouchableOpacity>
 
-          {/* ELIMINAR */}
+          {/* ELIMINAR — vibración al pulsar + vibración al confirmar */}
           <TouchableOpacity
             style={[styles.btn, { backgroundColor: '#ff4444' }]}
-            onPress={eliminar}
+            onPress={() => {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); // vibración al pulsar
+              eliminar(); // vibración al confirmar
+            }}
           >
             <Text style={styles.btnText}>Eliminar</Text>
           </TouchableOpacity>

@@ -9,7 +9,9 @@ import { useNotesStore } from '../../store/notesStore';
 import type { ChecklistItem } from '../../types';
 
 export default function ChecklistDetalle() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string }>();
+  const id = params.id as string;
+
   const router = useRouter();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -31,11 +33,13 @@ export default function ChecklistDetalle() {
   const progreso = total > 0 ? (completadas / total) * 100 : 0;
 
   const fecha = new Date(data.createdAt).toLocaleDateString('es-ES', {
-    day: 'numeric', month: 'long', year: 'numeric',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
   });
 
   const handleToggle = (itemId: string) => {
-    toggleChecklistItem(id!, itemId);
+    toggleChecklistItem(id, itemId);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     setTimeout(() => {
@@ -54,35 +58,41 @@ export default function ChecklistDetalle() {
     }, 50);
   };
 
-  const confirmar = (titulo: string, mensaje: string, accion: () => void) => {
+  function confirmar(titulo: string, mensaje: string, accion: () => void) {
     Alert.alert(titulo, mensaje, [
       { text: 'Cancelar', style: 'cancel' },
-      { text: titulo, style: titulo === 'Eliminar' ? 'destructive' : 'default', onPress: accion },
+      {
+        text: titulo,
+        style: titulo === 'Eliminar' ? 'destructive' : 'default',
+        onPress: accion,
+      },
     ]);
-  };
+  }
 
-  const eliminar = () => confirmar('Eliminar', '¿Seguro que quieres eliminar esta tarea?', () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    deleteChecklist(id!);
-    router.back();
-  });
+  const eliminar = () =>
+    confirmar('Eliminar', '¿Seguro que quieres eliminar esta tarea?', () => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); // vibración al confirmar
+      deleteChecklist(id);
+      router.back();
+    });
 
-  const archivar = () => confirmar('Archivar', '¿Quieres archivar esta tarea?', () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    archiveChecklist(id!);
-    router.back();
-  });
+  const archivar = () =>
+    confirmar('Archivar', '¿Quieres archivar esta tarea?', () => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al confirmar
+      archiveChecklist(id);
+      router.back();
+    });
 
   const editar = () => {
     if (isOpening) return;
     setIsOpening(true);
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al pulsar
 
     router.push({
-    pathname: "/checklists/editar/EditTaskScreen",
-    params: { id }
-  });
+      pathname: "/checklists/editar/EditTaskScreen",
+      params: { id },
+    });
 
     setTimeout(() => setIsOpening(false), 600);
   };
@@ -100,7 +110,7 @@ export default function ChecklistDetalle() {
           <Text style={[styles.counter, { color: theme.textSecondary }]}>{completadas}/{total} completadas</Text>
 
           <View style={[styles.barraFondo, { backgroundColor: theme.border }]}>
-            <View style={[styles.barraRelleno, { width: `${progreso}%` as any, backgroundColor: theme.success }]} />
+            <View style={[styles.barraRelleno, { width: `${progreso}%`, backgroundColor: theme.success }]} />
           </View>
         </FadeInDown>
 
@@ -117,8 +127,8 @@ export default function ChecklistDetalle() {
                   { borderColor: theme.border },
                   item.isCompleted && {
                     backgroundColor: theme.success,
-                    borderColor: theme.success
-                  }
+                    borderColor: theme.success,
+                  },
                 ]}
               />
 
@@ -128,8 +138,8 @@ export default function ChecklistDetalle() {
                   { color: theme.text },
                   item.isCompleted && {
                     textDecorationLine: 'line-through',
-                    color: theme.textTertiary
-                  }
+                    color: theme.textTertiary,
+                  },
                 ]}
               >
                 {item.text}
@@ -146,34 +156,46 @@ export default function ChecklistDetalle() {
           {
             paddingBottom: insets.bottom + 12,
             borderTopColor: theme.border,
-            backgroundColor: theme.background
-          }
+            backgroundColor: theme.background,
+          },
         ]}>
 
+          {/* EDITAR */}
           <TouchableOpacity
             disabled={isOpening}
             style={[
               styles.btn,
               {
                 backgroundColor: isOpening ? theme.border : theme.card,
-                borderColor: theme.border
-              }
+                borderColor: theme.border,
+              },
             ]}
-            onPress={editar}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al pulsar
+              editar();
+            }}
           >
             <Text style={[styles.btnText, { color: theme.text }]}>Editar</Text>
           </TouchableOpacity>
 
+          {/* ARCHIVAR — vibración al pulsar + vibración al confirmar */}
           <TouchableOpacity
             style={[styles.btn, { backgroundColor: theme.card, borderColor: theme.border }]}
-            onPress={archivar}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al pulsar
+              archivar(); // vibración al confirmar
+            }}
           >
             <Text style={[styles.btnText, { color: theme.text }]}>Archivar</Text>
           </TouchableOpacity>
 
+          {/* ELIMINAR — vibración al pulsar + vibración al confirmar */}
           <TouchableOpacity
             style={[styles.btn, { backgroundColor: theme.danger }]}
-            onPress={eliminar}
+            onPress={() => {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); // vibración al pulsar
+              eliminar(); // vibración al confirmar
+            }}
           >
             <Text style={[styles.btnText, { color: '#fff' }]}>Eliminar</Text>
           </TouchableOpacity>
@@ -193,14 +215,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginBottom: 12,
     textTransform: 'uppercase',
-    letterSpacing: 0.5
+    letterSpacing: 0.5,
   },
 
   title: {
     fontSize: 28,
     fontWeight: '700',
     marginBottom: 8,
-    lineHeight: 34
+    lineHeight: 34,
   },
 
   counter: { fontSize: 14, marginBottom: 8 },
@@ -208,19 +230,19 @@ const styles = StyleSheet.create({
   barraFondo: {
     height: 6,
     borderRadius: 3,
-    marginBottom: 16
+    marginBottom: 16,
   },
 
   barraRelleno: {
     height: 6,
-    borderRadius: 3
+    borderRadius: 3,
   },
 
   item: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
-    borderBottomWidth: 1
+    borderBottomWidth: 1,
   },
 
   checkbox: {
@@ -228,7 +250,7 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
-    marginRight: 12
+    marginRight: 12,
   },
 
   itemText: { fontSize: 16, flex: 1 },
@@ -238,7 +260,7 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 20,
     paddingTop: 12,
-    borderTopWidth: 1
+    borderTopWidth: 1,
   },
 
   btn: {
@@ -247,8 +269,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'transparent'
+    borderColor: 'transparent',
   },
 
-  btnText: { fontWeight: '600', fontSize: 15 }
+  btnText: { fontWeight: '600', fontSize: 15 },
 });

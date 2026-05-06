@@ -3,22 +3,25 @@ import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../constants/theme';
 import { useNotesStore } from '../../../store/notesStore';
 
 import Animated, {
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
+
+import { Ionicons } from '@expo/vector-icons';
 
 type Subtarea = {
   id: string;
@@ -30,6 +33,7 @@ export default function EditTaskScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   const { checklists, updateChecklist } = useNotesStore();
 
@@ -38,7 +42,6 @@ export default function EditTaskScreen() {
   const [title, setTitle] = useState(task?.title ?? '');
   const [subtareas, setSubtareas] = useState<Subtarea[]>(task?.items ?? []);
 
-  // Animación de entrada
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(10);
 
@@ -82,7 +85,6 @@ export default function EditTaskScreen() {
     setSubtareas((prev) => [...prev, createSubtarea()]);
   };
 
-  // Animación de salida + guardar
   const save = async () => {
     if (!title.trim()) return;
 
@@ -106,11 +108,30 @@ export default function EditTaskScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       <Animated.View style={[{ flex: 1 }, animStyle]}>
-        <ScrollView contentContainerStyle={{ padding: 20 }}>
-          
-          <Text style={[styles.header, { color: theme.text }]}>
-            Editar tarea
-          </Text>
+        <ScrollView
+          contentContainerStyle={{
+            padding: 20,
+            paddingTop: 10,
+            paddingBottom: insets.bottom + 40,
+          }}
+        >
+          {/* HEADER */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 20,
+              marginTop: insets.top,
+            }}
+          >
+            <Text onPress={() => router.back()} style={{ marginRight: 12 }}>
+              <Ionicons name="arrow-back" size={24} color={theme.text} />
+            </Text>
+
+            <Text style={[styles.header, { color: theme.text }]}>
+              Editar tarea
+            </Text>
+          </View>
 
           <Text style={[styles.label, { color: theme.textSecondary }]}>
             Título
@@ -182,7 +203,6 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 24,
     fontWeight: '700',
-    marginBottom: 20,
   },
 
   label: {

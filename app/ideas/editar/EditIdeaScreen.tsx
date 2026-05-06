@@ -2,23 +2,26 @@ import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../constants/theme';
 import { useNotesStore } from '../../../store/notesStore';
 
 import Animated, {
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
+
+import { Ionicons } from '@expo/vector-icons';
 
 export default function EditIdeaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -82,14 +85,28 @@ export default function EditIdeaScreen() {
           <ScrollView
             contentContainerStyle={{
               padding: 20,
-              paddingTop: insets.top + 10,
+              paddingTop: 10,
               paddingBottom: insets.bottom + 40,
             }}
             showsVerticalScrollIndicator={false}
           >
-            <Text style={[styles.header, { color: theme.text }]}>
-              Editar idea
-            </Text>
+            {/* HEADER */}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 20,
+                marginTop: insets.top,
+              }}
+            >
+              <Text onPress={() => router.back()} style={{ marginRight: 12 }}>
+                <Ionicons name="arrow-back" size={24} color={theme.text} />
+              </Text>
+
+              <Text style={[styles.header, { color: theme.text }]}>
+                Editar idea
+              </Text>
+            </View>
 
             <TextInput
               style={[
@@ -141,7 +158,10 @@ export default function EditIdeaScreen() {
               onChangeText={setTags}
             />
 
-            <Text onPress={save} style={[styles.saveBtn, { backgroundColor: theme.primary }]}>
+            <Text
+              onPress={save}
+              style={[styles.saveBtn, { backgroundColor: theme.primary }]}
+            >
               Guardar cambios
             </Text>
           </ScrollView>
@@ -157,7 +177,6 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 24,
     fontWeight: '700',
-    marginBottom: 20,
   },
 
   input: {
