@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../constants/theme';
 import { IdeaNote } from '../../types';
+import { getColoredItemStyles } from '../../utils/ideaColors';
 
 interface Props {
   idea: IdeaNote;
@@ -10,6 +11,7 @@ interface Props {
 
 export default function IdeaCard({ idea, onPress }: Props) {
   const theme = useTheme();
+  const { textColor, textSecondary, iconColor, btnColor } = getColoredItemStyles(idea.color, theme);
 
   return (
     <TouchableOpacity
@@ -17,15 +19,15 @@ export default function IdeaCard({ idea, onPress }: Props) {
       onPress={onPress}
     >
       <View style={styles.row}>
-        <Ionicons name="bulb-outline" size={22} color={theme.primary} style={{ marginRight: 10 }} />
-        <Text style={[styles.title, { color: theme.text }]}>{idea.title}</Text>
+        <Ionicons name="bulb-outline" size={22} color={iconColor} style={{ marginRight: 10 }} />
+        <Text style={[styles.title, { color: textColor }]}>{idea.title}</Text>
       </View>
 
       {idea.tags.length > 0 && (
         <View style={styles.tags}>
           {idea.tags.map((tag, index) => (
-            <View key={index} style={[styles.tag, { backgroundColor: theme.textTertiary + '22' }]}>
-              <Text style={[styles.tagText, { color: theme.textSecondary }]}>#{tag}</Text>
+            <View key={index} style={[styles.tag, { backgroundColor: btnColor }]}>
+              <Text style={[styles.tagText, { color: textSecondary }]}>#{tag}</Text>
             </View>
           ))}
         </View>

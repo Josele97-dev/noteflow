@@ -1,19 +1,16 @@
 import { FadeInDown } from '@/components/animations/FadeInDown';
+import { ItemActions } from '@/components/items/ItemActions';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../../constants/theme';
 import { useNotesStore } from '../../store/notesStore';
 
 export default function NotaDetalle() {
-  const params = useLocalSearchParams<{ id: string }>();
-  const id = params.id as string;
-
+  const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
   const { notes, deleteNote, archiveNote } = useNotesStore();
 
   const nota = notes.find((n) => n.id === id);
@@ -51,7 +48,7 @@ export default function NotaDetalle() {
 
   const archivar = () =>
     confirmar('Archivar', '¿Quieres archivar esta nota?', () => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al confirmar
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       archiveNote(id);
       router.back();
     });
@@ -59,14 +56,7 @@ export default function NotaDetalle() {
   const editar = () => {
     if (isOpening) return;
     setIsOpening(true);
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al pulsar
-
-    router.push({
-      pathname: '/notas/editar/EditNoteScreen',
-      params: { id },
-    });
-
+    router.push({ pathname: '/notas/editar/EditNoteScreen', params: { id } });
     setTimeout(() => setIsOpening(false), 600);
   };
 
@@ -78,79 +68,26 @@ export default function NotaDetalle() {
         showsVerticalScrollIndicator={false}
       >
         <FadeInDown duration={400} offset={-30}>
-          <Text style={[styles.fecha, { color: theme.textTertiary }]}>
-            {fecha}
-          </Text>
+          <Text style={[styles.fecha, { color: theme.textTertiary }]}>{fecha}</Text>
         </FadeInDown>
 
         <FadeInDown duration={400} offset={-30} delay={100}>
-          <Text style={[styles.title, { color: theme.text }]}>
-            {data.title}
-          </Text>
+          <Text style={[styles.title, { color: theme.text }]}>{data.title}</Text>
         </FadeInDown>
 
         <FadeInDown duration={400} offset={-30} delay={200}>
           <View style={[styles.separador, { backgroundColor: theme.border }]} />
-          <Text style={[styles.content, { color: theme.textSecondary }]}>
-            {data.content}
-          </Text>
+          <Text style={[styles.content, { color: theme.textSecondary }]}>{data.content}</Text>
         </FadeInDown>
       </ScrollView>
 
       <FadeInDown duration={400} offset={-30} delay={300}>
-        <View
-          style={[
-            styles.actions,
-            {
-              paddingBottom: insets.bottom + 12,
-              borderTopColor: theme.border,
-              backgroundColor: theme.background,
-            },
-          ]}
-        >
-          {/* EDITAR */}
-          <TouchableOpacity
-            disabled={isOpening}
-            style={[
-              styles.btn,
-              {
-                backgroundColor: isOpening ? theme.border : theme.card,
-                borderColor: theme.border,
-              },
-            ]}
-            onPress={editar}
-          >
-            <Text style={[styles.btnText, { color: theme.text }]}>
-              Editar
-            </Text>
-          </TouchableOpacity>
-
-          {/* ARCHIVAR — vibración al pulsar + vibración al confirmar */}
-          <TouchableOpacity
-            style={[styles.btn, { backgroundColor: theme.card, borderColor: theme.border }]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al pulsar
-              archivar(); // vibración al confirmar
-            }}
-          >
-            <Text style={[styles.btnText, { color: theme.text }]}>
-              Archivar
-            </Text>
-          </TouchableOpacity>
-
-          {/* ELIMINAR — vibración al pulsar + vibración al confirmar */}
-          <TouchableOpacity
-            style={[styles.btn, { backgroundColor: theme.danger }]}
-            onPress={() => {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); // vibración al pulsar
-              eliminar(); // vibración al confirmar
-            }}
-          >
-            <Text style={[styles.btnText, { color: '#fff' }]}>
-              Eliminar
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <ItemActions
+          isOpening={isOpening}
+          onEditar={editar}
+          onArchivar={archivar}
+          onEliminar={eliminar}
+        />
       </FadeInDown>
     </View>
   );
@@ -174,23 +111,4 @@ const styles = StyleSheet.create({
   },
   separador: { height: 1, marginBottom: 20 },
   content: { fontSize: 16, lineHeight: 26 },
-  actions: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    borderTopWidth: 1,
-  },
-  btn: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  btnText: {
-    fontWeight: '600',
-    fontSize: 15,
-  },
 });

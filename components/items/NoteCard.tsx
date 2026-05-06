@@ -8,8 +8,6 @@ interface Props {
   onPress: () => void;
 }
 
-const ICON_COLOR = '#6C63FF';
-
 export default function NoteCard({ note, onPress }: Props) {
   const theme = useTheme();
   const fecha = new Date(note.createdAt).toLocaleDateString('es-ES');
@@ -20,7 +18,7 @@ export default function NoteCard({ note, onPress }: Props) {
       onPress={onPress}
     >
       <View style={styles.row}>
-        <Ionicons name="document-text-outline" size={22} color={ICON_COLOR} style={{ marginRight: 10 }} />
+        <Ionicons name="document-text-outline" size={22} color={theme.primary} style={{ marginRight: 10 }} />
         <View style={{ flex: 1 }}>
           <Text style={[styles.title, { color: theme.text }]}>{note.title}</Text>
           <Text style={[styles.content, { color: theme.textSecondary }]} numberOfLines={2}>{note.content}</Text>

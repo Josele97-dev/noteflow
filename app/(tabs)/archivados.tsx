@@ -1,3 +1,4 @@
+import ArchivedSection from '@/components/archived/ArchivedSection';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
@@ -14,6 +15,7 @@ import {
 import { FadeOutLeft } from '../../components/animations/FadeOutLeft';
 import { useTheme } from '../../constants/theme';
 import { useNotesStore } from '../../store/notesStore';
+import { getColoredItemStyles } from '../../utils/ideaColors';
 
 type ItemType = 'nota' | 'tarea' | 'idea';
 
@@ -38,7 +40,7 @@ export default function ArchivadosScreen() {
     unarchiveIdea,
     deleteNote,
     deleteChecklist,
-    deleteIdea
+    deleteIdea,
   } = useNotesStore();
 
   const [busqueda, setBusqueda] = useState('');
@@ -55,7 +57,7 @@ export default function ArchivadosScreen() {
   const q = busqueda.toLowerCase();
   const matches = (title: string) => title.toLowerCase().includes(q);
 
-  const sections: Array<{ label: string; items: ArchivedItem[] }> = [
+  const sections = [
     {
       label: 'NOTAS',
       items: notes
@@ -87,7 +89,7 @@ export default function ArchivadosScreen() {
         .map<ArchivedItem>((i) => ({
           id: i.id,
           title: i.title,
-          subtitle: i.tags.length > 0 ? i.tags.join(', ') : 'Sin etiquetas',
+          subtitle: i.tags.length > 0 ? i.tags.join(', ') : '',
           icon: 'zap',
           color: i.color,
           type: 'idea',
@@ -97,69 +99,75 @@ export default function ArchivadosScreen() {
 
   const total = sections.reduce((acc, s) => acc + s.items.length, 0);
 
-  // DESARCHIVAR → vibración Light
   const activarSalida = (id: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSaliendoId(id);
   };
 
-  // ELIMINAR → vibración Warning al pulsar y al confirmar
   const confirmarEliminar = (id: string, nombre: string) => {
-    // vibración al pulsar el botón rojo
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-
     Alert.alert('Eliminar', `¿Seguro que quieres eliminar "${nombre}"?`, [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Eliminar',
         style: 'destructive',
         onPress: () => {
-          // vibración al confirmar
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
           activarSalida(id);
-        }
+        },
       },
     ]);
   };
 
   const onFinish = (id: string, type: ItemType) => {
-    // vibración Light al desarchivar (igual que Archivar/Editar)
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
     if (type === 'nota') unarchiveNote(id);
     else if (type === 'tarea') unarchiveChecklist(id);
     else unarchiveIdea(id);
-
     setSaliendoId(null);
   };
 
-  const renderCard = (item: ArchivedItem) => (
-    <View style={[styles.card, { backgroundColor: item.color || theme.card }]}>
-      <Feather name={item.icon} size={18} color={theme.primary} style={{ marginRight: 12 }} />
-      <View style={{ flex: 1 }}>
-        <Text style={[styles.cardTitle, { color: theme.text }]}>{item.title}</Text>
-        <Text style={[styles.cardSub, { color: theme.textSecondary }]} numberOfLines={1}>
-          {item.subtitle}
-        </Text>
+  const renderCard = (item: ArchivedItem) => {
+    const { textColor, textSecondary, btnColor, iconColor, dangerBtnColor, dangerIconColor } =
+      getColoredItemStyles(item.color, theme);
+
+    return (
+      <View style={[styles.card, { backgroundColor: item.color || theme.card }]}>
+        <Feather name={item.icon} size={18} color={iconColor} style={{ marginRight: 12 }} />
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.cardTitle, { color: textColor }]}>{item.title}</Text>
+          {item.subtitle ? (
+            <Text style={[styles.cardSub, { color: textSecondary }]} numberOfLines={1}>
+              {item.subtitle}
+            </Text>
+          ) : null}
+        </View>
+
+        <TouchableOpacity
+          style={[styles.accionBtn, { backgroundColor: btnColor }]}
+          onPress={() => activarSalida(item.id)}
+        >
+          <Feather name="corner-up-left" size={16} color={iconColor} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.accionBtn, { backgroundColor: dangerBtnColor, marginLeft: 8 }]}
+          onPress={() => confirmarEliminar(item.id, item.title)}
+        >
+          <Feather name="trash-2" size={16} color={dangerIconColor} />
+        </TouchableOpacity>
       </View>
+    );
+  };
 
-      {/* DESARCHIVAR */}
-      <TouchableOpacity
-        style={[styles.accionBtn, { backgroundColor: theme.primary + '22' }]}
-        onPress={() => activarSalida(item.id)}
-      >
-        <Feather name="corner-up-left" size={16} color={theme.primary} />
-      </TouchableOpacity>
-
-      {/* ELIMINAR DEFINITIVO */}
-      <TouchableOpacity
-        style={[styles.accionBtn, { backgroundColor: theme.danger + '22', marginLeft: 8 }]}
-        onPress={() => confirmarEliminar(item.id, item.title)}
-      >
-        <Feather name="trash-2" size={16} color={theme.danger} />
-      </TouchableOpacity>
-    </View>
-  );
+  const renderItem = ({ item }: { item: ArchivedItem }) =>
+    saliendoId === item.id ? (
+      <FadeOutLeft duration={250} onFinish={() => onFinish(item.id, item.type)}>
+        {renderCard(item)}
+      </FadeOutLeft>
+    ) : (
+      renderCard(item)
+    );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -185,23 +193,9 @@ export default function ArchivadosScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ padding: 16 }}>
-          {sections.map(({ label, items }) =>
-            items.length === 0 ? null : (
-              <View key={label}>
-                <Text style={[styles.seccion, { color: theme.textSecondary }]}>{label}</Text>
-
-                {items.map((item) =>
-                  saliendoId === item.id ? (
-                    <FadeOutLeft key={item.id} duration={250} onFinish={() => onFinish(item.id, item.type)}>
-                      {renderCard(item)}
-                    </FadeOutLeft>
-                  ) : (
-                    <View key={item.id}>{renderCard(item)}</View>
-                  )
-                )}
-              </View>
-            )
-          )}
+          <ArchivedSection title="NOTAS" data={sections[0].items} renderItem={renderItem} />
+          <ArchivedSection title="TAREAS" data={sections[1].items} renderItem={renderItem} />
+          <ArchivedSection title="IDEAS" data={sections[2].items} renderItem={renderItem} />
         </ScrollView>
       )}
     </View>
@@ -216,26 +210,17 @@ const styles = StyleSheet.create({
     padding: 12,
     margin: 16,
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
   },
   searchInput: { marginLeft: 10, flex: 1, fontSize: 16 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   emptyText: { fontSize: 18, fontWeight: '600' },
   emptySubtext: { fontSize: 14, marginTop: 8, textAlign: 'center', paddingHorizontal: 40 },
-  seccion: { fontSize: 12, fontWeight: '700', marginBottom: 8, marginTop: 16, letterSpacing: 1 },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
   },
   cardTitle: { fontSize: 16, fontWeight: '600' },
   cardSub: { fontSize: 13, marginTop: 2 },

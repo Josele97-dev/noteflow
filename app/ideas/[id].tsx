@@ -1,19 +1,14 @@
 import { FadeInDown } from '@/components/animations/FadeInDown';
+import { ItemActions } from '@/components/items/ItemActions';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../../constants/theme';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNotesStore } from '../../store/notesStore';
 
 export default function IdeaDetalle() {
-  const params = useLocalSearchParams<{ id: string }>();
-  const id = params.id as string;
-
+  const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const theme = useTheme();
-  const insets = useSafeAreaInsets();
   const { ideas, deleteIdea, archiveIdea } = useNotesStore();
 
   const idea = ideas.find((i) => i.id === id);
@@ -21,7 +16,7 @@ export default function IdeaDetalle() {
   if (idea) ideaRef.current = idea;
   const data = ideaRef.current;
 
-  if (!data) return <View style={{ flex: 1, backgroundColor: theme.background }} />;
+  if (!data) return <View style={{ flex: 1 }} />;
 
   const fecha = new Date(data.createdAt).toLocaleDateString('es-ES', {
     day: 'numeric',
@@ -42,26 +37,20 @@ export default function IdeaDetalle() {
 
   const eliminar = () =>
     confirmar('Eliminar', '¿Seguro que quieres eliminar esta idea?', () => {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); // vibración al confirmar
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       deleteIdea(id);
       router.back();
     });
 
   const archivar = () =>
     confirmar('Archivar', '¿Quieres archivar esta idea?', () => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al confirmar
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       archiveIdea(id);
       router.back();
     });
 
-  const editar = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al pulsar
-
-    router.push({
-      pathname: '/ideas/editar/EditIdeaScreen',
-      params: { id },
-    });
-  };
+  const editar = () =>
+    router.push({ pathname: '/ideas/editar/EditIdeaScreen', params: { id } });
 
   const baseDelay = data.content ? 100 : 0;
 
@@ -98,42 +87,12 @@ export default function IdeaDetalle() {
       </ScrollView>
 
       <FadeInDown duration={400} offset={-30} delay={300 + baseDelay}>
-        <View style={[styles.actions, { paddingBottom: insets.bottom + 12 }]}>
-
-          {/* EDITAR */}
-          <TouchableOpacity
-            style={[styles.btn, { backgroundColor: 'rgba(0,0,0,0.15)' }]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al pulsar
-              editar();
-            }}
-          >
-            <Text style={styles.btnText}>Editar</Text>
-          </TouchableOpacity>
-
-          {/* ARCHIVAR — vibración al pulsar + vibración al confirmar */}
-          <TouchableOpacity
-            style={[styles.btn, { backgroundColor: 'rgba(0,0,0,0.15)' }]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // vibración al pulsar
-              archivar(); // vibración al confirmar
-            }}
-          >
-            <Text style={styles.btnText}>Archivar</Text>
-          </TouchableOpacity>
-
-          {/* ELIMINAR — vibración al pulsar + vibración al confirmar */}
-          <TouchableOpacity
-            style={[styles.btn, { backgroundColor: '#ff4444' }]}
-            onPress={() => {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); // vibración al pulsar
-              eliminar(); // vibración al confirmar
-            }}
-          >
-            <Text style={styles.btnText}>Eliminar</Text>
-          </TouchableOpacity>
-
-        </View>
+        <ItemActions
+          variant="color"
+          onEditar={editar}
+          onArchivar={archivar}
+          onEliminar={eliminar}
+        />
       </FadeInDown>
     </View>
   );
@@ -174,27 +133,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  tagText: {
-    fontSize: 14,
-    color: '#1a1a1a',
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.1)',
-  },
-  btn: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  btnText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 15,
-  },
+  tagText: { fontSize: 14, color: '#1a1a1a' },
 });
