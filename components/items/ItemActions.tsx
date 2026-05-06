@@ -1,5 +1,3 @@
-// components/items/DetailActionBar.tsx
-
 import { useTheme } from '@/constants/theme';
 import * as Haptics from 'expo-haptics';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -10,7 +8,7 @@ type Props = {
   onArchivar: () => void;
   onEliminar: () => void;
   isOpening?: boolean;
-  variant?: 'theme' | 'color';   // 'theme' = notas/checklists, 'color' = ideas
+  variant?: 'theme' | 'color';   
 };
 
 export function ItemActions ({

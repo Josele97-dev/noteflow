@@ -1,4 +1,3 @@
-// app/notas/index.tsx
 import NoteCard from '@/components/items/NoteCard';
 import { BaseList } from '@/components/lists/BaseList';
 import { useTheme } from '@/constants/theme';

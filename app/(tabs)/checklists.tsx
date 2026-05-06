@@ -1,4 +1,3 @@
-// app/checklists/index.tsx
 import ChecklistCard from '@/components/items/ChecklistCard';
 import { BaseList } from '@/components/lists/BaseList';
 import { useTheme } from '@/constants/theme';

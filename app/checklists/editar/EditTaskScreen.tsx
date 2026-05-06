@@ -35,7 +35,6 @@ export default function EditTaskScreen() {
   const { animStyle, exit } = useExitAnimation();
 
   useEffect(() => {
-    // la animación de entrada la maneja useExitAnimation con valores iniciales 1/0
   }, []);
 
   if (!task) return null;

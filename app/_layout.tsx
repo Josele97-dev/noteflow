@@ -33,13 +33,11 @@ export default function RootLayout() {
       }}
     >
 
-      {/* TABS */}
       <Stack.Screen
         name="(tabs)"
         options={{ headerShown: false }}
       />
 
-      {/* ================= NOTES ================= */}
       <Stack.Screen
         name="notas/[id]"
         options={{
@@ -59,7 +57,6 @@ export default function RootLayout() {
         }}
       />
 
-      {/* ================= IDEAS ================= */}
       <Stack.Screen
         name="ideas/[id]"
         options={{
@@ -79,7 +76,6 @@ export default function RootLayout() {
         }}
       />
 
-      {/* ================= CHECKLISTS ================= */}
       <Stack.Screen
         name="checklists/[id]"
         options={{
@@ -99,7 +95,6 @@ export default function RootLayout() {
         }}
       />
 
-      {/* ================= NUEVA NOTA ================= */}
       <Stack.Screen
         name="nueva-nota"
         options={{

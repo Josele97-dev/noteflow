@@ -81,77 +81,7 @@ Esto es relevante para el siguiente punto: el parpadeo.
 
 ---
 
-# 5. El problema real del parpadeo (flicker) en Expo SDK 55
-
-Durante el desarrollo de NoteFlow apareció un problema típico en Android:
-
-❗ Un parpadeo blanco al navegar entre pantallas de detalle.
-
-Este parpadeo NO lo causa tu código.
-Lo causa la combinación de:
-
-- React Native 0.76
-- React 18 (doble render en desarrollo)
-- Expo Router (remount en navegación)
-- Android mostrando un frame vacío antes de montar la nueva pantalla
-
-Este frame vacío es el famoso flicker.
-
-Importante:
-No existe forma de eliminarlo al 100% desde JavaScript.
-Solo se puede ocultar o reducir.
-
----
-
-# 6. Animaciones declarativas de Reanimated (entering/exiting)
-
-Reanimated ofrece animaciones declarativas como:
-
-```tsx
-<Animated.View entering={FadeInDown} exiting={FadeOutLeft}>
-```
-
-Estas animaciones funcionan muy bien en listas o elementos pequeños, pero en pantallas completas tienen problemas:
-
-❌ Hacen remount interno  
-❌ No permiten sincronizar la salida con router.back()  
-❌ No permiten controlar scale + translate + opacity juntos  
-❌ Se rompen con FlashList  
-❌ Aumentan el parpadeo en Android  
-❌ No permiten animaciones fuertes (solo presets suaves)  
-
-Por eso, aunque las animaciones declarativas están implementadas en el proyecto, NO se usan en pantallas de detalle.
-
----
-
-# 7. Por qué se eligió animación imperativa (la solución final)
-
-```ts
-const scale = useSharedValue(0.85);
-const opacity = useSharedValue(0);
-const translateY = useSharedValue(80);
-
-scale.value = withTiming(1, { duration: 350 });
-opacity.value = withTiming(1, { duration: 350 });
-translateY.value = withTiming(0, { duration: 350 });
-```
-
-Ventajas:
-
-✔ Control total  
-✔ Animación fuerte y visible  
-✔ Sin remount interno  
-✔ Sin interferencias con FlashList  
-✔ Permite animación de salida sincronizada con router.back()  
-✔ Reduce el parpadeo al mínimo posible  
-
-Resultado:
-El flicker no desaparece al 100% (porque es nativo),
-pero se reduce un 70–80%, y la transición se siente fluida y profesional.
-
----
-
-# 8. FlashList y reciclaje de componentes
+# 5. FlashList y reciclaje de componentes
 
 FlashList soluciona problemas de rendimiento:
 
@@ -167,7 +97,7 @@ Se usa en:
 
 ---
 
-# 9. Estado global con Zustand
+# 6. Estado global con Zustand
 
 Zustand se eligió porque:
 
@@ -178,7 +108,7 @@ Zustand se eligió porque:
 
 ---
 
-# 10. Persistencia con AsyncStorage
+# 7. Persistencia con AsyncStorage
 
 Permite:
 
@@ -188,7 +118,7 @@ Permite:
 
 ---
 
-# 11. Sistema de diseño y modo oscuro
+# 8. Sistema de diseño y modo oscuro
 
 - Paleta de colores propia  
 - Tipografía consistente  
@@ -197,7 +127,7 @@ Permite:
 
 ---
 
-# 12. Conclusión técnica
+# 9. Conclusión técnica
 
 NoteFlow demuestra entendimiento de:
 
@@ -208,6 +138,5 @@ NoteFlow demuestra entendimiento de:
 - Zustand  
 - Persistencia  
 - Arquitectura móvil  
-- Problemas reales como el parpadeo  
 
 Las decisiones técnicas fueron basadas en pruebas reales y búsqueda de rendimiento y fluidez.

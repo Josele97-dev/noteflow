@@ -1,113 +1,193 @@
-# 📱 NoteFlow
+# NoteFlow
 
-Gestor de notas moderno y minimalista construido con **Expo**, **React
-Native**, **Zustand**, **FlashList** y **Expo Router**.\
+Gestor de notas moderno y minimalista construido con Expo, React Native,
+Zustand, FlashList y Expo Router.\
 Diseñado para ser rápido, fluido y extremadamente claro, con animaciones
-suaves y persistencia local.
+suaves, edición completa y persistencia local.
 
 ------------------------------------------------------------------------
 
-## ✨ Descripción
+## Descripción
 
 NoteFlow organiza la información en tres tipos de contenido:
 
--   📝 **Notas** --- texto libre\
--   ☑️ **Checklists** --- listas de tareas\
--   💡 **Ideas** --- notas rápidas con etiquetas y color
+-   Notas --- texto libre\
+-   Checklists --- listas de tareas\
+-   Ideas --- notas rápidas con etiquetas y color
+
+Cada tipo tiene su propia vista, su propio detalle, su flujo de edición
+y su sistema de archivado.
 
 ------------------------------------------------------------------------
 
-## ✨ Características principales
+## Características principales
 
-### 🧩 Tipos de contenido
+### Tipos de contenido
 
-#### 📝 Notas
+#### Notas
 
 -   Título, contenido y fecha\
 -   Vista de detalle\
+-   Edición completa\
 -   Eliminación con confirmación\
+-   Archivado\
 -   Feedback háptico
 
-#### ☑️ Checklists
+#### Checklists
 
 -   Items marcables\
 -   Barra de progreso\
+-   Edición de listas e items\
+-   Archivado\
 -   Vibración al completar tareas
 
-#### 💡 Ideas
+#### Ideas
 
 -   Etiquetas dinámicas\
 -   Color personalizado\
+-   Edición completa\
+-   Archivado\
 -   Organización visual rápida
 
 ------------------------------------------------------------------------
 
-## ⚡ Rendimiento
+## Rendimiento
 
 -   FlashList en todas las pantallas\
 -   Optimización para +50 elementos sin pérdida de FPS\
--   Re-render controlado
+-   Re-render controlado\
+-   Búsqueda en tiempo real sin bloqueos
 
 ------------------------------------------------------------------------
 
-## 🎨 UI / UX
+## UI / UX
 
 -   Tema claro y oscuro automático\
--   Sistema de tokens en `constants/theme.ts`\
--   Animaciones imperativas con Reanimated\
--   Interacciones con feedback háptico
+-   Sistema de tokens en constants/theme.ts\
+-   Animaciones declarativas suaves (FadeInDown)\
+-   Interacciones con feedback háptico\
+-   Estados vacíos personalizados\
+-   Diseño limpio y minimalista
 
 ------------------------------------------------------------------------
 
-## 🧠 Estado global
+## Estado global
 
 -   Zustand como store principal\
 -   Persistencia con AsyncStorage\
--   Rehidratación automática
+-   Rehidratación automática\
+-   Stores unificados para notas, ideas y checklists
 
 ------------------------------------------------------------------------
 
-## 🧭 Navegación
+## Navegación
 
 -   Expo Router\
 -   Tabs como navegación principal\
--   Rutas dinámicas `[id].tsx`\
--   Pantalla modal para creación
+-   Rutas dinámicas \[id\].tsx\
+-   Pantallas de edición en subcarpetas /editar\
+-   Modal para creación de nuevas notas
 
 ------------------------------------------------------------------------
 
-## 📘 Documentación
+## Estructura del proyecto
 
--   `idea.md` → concepto del proyecto\
--   `project-management.md` → organización en Trello\
--   `ai-setup.md` → herramientas de IA\
--   `react-native-teoria.md` → teoría de animaciones y rendimiento
+```bash
+app/
+  (tabs)/
+    _layout.tsx
+    notas.tsx
+    ideas.tsx
+    checklists.tsx
+    archivados.tsx
+
+  notas/
+    _layout.tsx
+    [id].tsx
+    editar/
+      EditNoteScreen.tsx
+
+  ideas/
+    [id].tsx
+    editar/
+      EditIdeaScreen.tsx
+
+  checklists/
+    [id].tsx
+    editar/
+      EditTaskScreen.tsx
+
+   nueva-nota.tsx
+   _layout.tsx
+
+components/
+  animations/
+    FadeInDown.tsx
+  archived/
+    ArchivedCard.tsx
+  items/
+    NoteCard.tsx
+    IdeaCard.tsx
+    ChecklistCard.tsx
+    ItemActions.tsx
+  lists/
+    BaseList.tsx
+    EditHeader.tsx
+
+constants/
+  theme.ts
+
+docs/
+  ai-setup.md
+  idea.md
+  project-management.md
+  react-native-teoria.md
+
+hooks/
+  use-color-scheme.ts
+  use-color-scheme.web.ts
+  use-theme-color.ts
+  useExitAnimation.ts
+
+store/
+  notesStore.ts
+```
 
 ------------------------------------------------------------------------
 
-## 📌 Tablero de Trello
+## Documentación
 
-👉 https://trello.com/TU_ENLACE_AQUI
+-   idea.md → concepto del proyecto\
+-   project-management.md → organización en Trello\
+-   react-native-teoria.md → teoría de RN, Expo y rendimiento\
+-   ai-setup.md → herramientas de IA usadas
 
 ------------------------------------------------------------------------
 
-## 🎞️ Animaciones
+## Tablero de Trello
 
-Se utilizan animaciones imperativas con Reanimated:
+https://trello.com/b/I1L4Exy8/noteflow
 
--   useSharedValue\
--   useAnimatedStyle\
--   withTiming
+------------------------------------------------------------------------
+
+## Animaciones
+
+Se utilizan animaciones declarativas suaves con Reanimated:
+
+-   FadeInDown\
+-   Delays progresivos\
+-   Transiciones limpias en pantallas de detalle
 
 ### Beneficios:
 
--   Control total de entrada/salida\
--   Evita parpadeo en Android\
--   Mejor rendimiento con listas largas
+-   Entrada fluida del contenido\
+-   Código simple y mantenible\
+-   Compatible con FlashList\
+-   Sin sobrecarga en pantallas de detalle
 
 ------------------------------------------------------------------------
 
-## 🛠️ Tecnologías
+## Tecnologías
 
 -   Expo SDK 55\
 -   React Native 0.76\
@@ -122,7 +202,7 @@ Se utilizan animaciones imperativas con Reanimated:
 
 ------------------------------------------------------------------------
 
-## 📦 Instalación
+## Instalación
 
 ``` bash
 git clone https://github.com/TU_ENLACE/noteflow.git
@@ -130,10 +210,3 @@ cd noteflow
 npm install
 npx expo start
 ```
-
-------------------------------------------------------------------------
-
-
-## 📝 Licencia
-
-Proyecto académico --- uso libre educativo.

@@ -1,4 +1,3 @@
-// app/ideas/index.tsx
 import IdeaCard from '@/components/items/IdeaCard';
 import { BaseList } from '@/components/lists/BaseList';
 import { useTheme } from '@/constants/theme';

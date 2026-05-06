@@ -1,12 +1,9 @@
-// components/lists/BaseList.tsx
 import { useTheme } from '@/constants/theme';
 import { Feather } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
-// Usamos ANY solo para el componente FlashList, NO para tus props.
-// Esto evita que FlashList colapse props como estimatedItemSize.
 const List = FlashList as unknown as React.ComponentType<any>;
 
 interface Props<T> {
@@ -41,7 +38,6 @@ export function BaseList<T>({
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* SEARCH */}
       <View style={[styles.search, { backgroundColor: theme.card }]}>
         <Feather name="search" size={18} color={theme.textSecondary} />
         <TextInput
@@ -53,7 +49,6 @@ export function BaseList<T>({
         />
       </View>
 
-      {/* EMPTY */}
       {filtered.length === 0 ? (
         <View style={styles.empty}>
           <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
