@@ -41,7 +41,7 @@ export default function TabsLayout() {
             headerRight: tipo
               ? () => (
                   <TouchableOpacity
-                    onPress={() => router.push(`/nueva-nota?tipo=${tipo}` as any)}
+                    onPress={() => router.push(`/crear?tipo=${tipo}` as any)}
                     style={{ marginRight: 16 }}
                   >
                     <Ionicons name="add-circle-outline" size={28} color={primary} />

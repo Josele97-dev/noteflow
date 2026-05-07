@@ -1,15 +1,15 @@
 import { FadeInDown } from '@/components/animations/FadeInDown';
-import { EditHeader } from '@/components/EditHeader';
+import { EditHeader } from '@/components/ui/EditHeader';
 import { useExitAnimation } from '@/hooks/useExitAnimation';
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';

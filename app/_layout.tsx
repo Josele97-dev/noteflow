@@ -96,9 +96,9 @@ export default function RootLayout() {
       />
 
       <Stack.Screen
-        name="nueva-nota"
+        name="crear"
         options={{
-          title: 'Nueva nota',
+          title: 'Crear',
           presentation: 'modal',
           animation: 'fade',
         }}

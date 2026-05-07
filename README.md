@@ -117,7 +117,7 @@ app/
     editar/
       EditTaskScreen.tsx
 
-   nueva-nota.tsx
+   crear.tsx
    _layout.tsx
 
 components/
@@ -132,6 +132,7 @@ components/
     ItemActions.tsx
   lists/
     BaseList.tsx
+  ui/
     EditHeader.tsx
 
 constants/

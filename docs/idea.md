@@ -42,7 +42,7 @@ La app está pensada para abrirla, hacer algo concreto en pocos segundos y cerra
   - Posibilidad de eliminar desde el detalle con confirmación.
 
 - Creación de nuevo contenido:
-  - Pantalla `nueva-nota` que adapta el formulario según el tipo de nota.
+  - Pantalla `crear` que adapta el formulario según el tipo de nota.
   - Validación con Zod para evitar datos incompletos.
 
 - Estado global:

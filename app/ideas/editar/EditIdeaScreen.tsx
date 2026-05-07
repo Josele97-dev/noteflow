@@ -1,4 +1,4 @@
-import { EditHeader } from '@/components/EditHeader';
+import { EditHeader } from '@/components/ui/EditHeader';
 import { useExitAnimation } from '@/hooks/useExitAnimation';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
