@@ -1,7 +1,7 @@
 # NoteFlow
 
 Gestor de notas moderno y minimalista construido con Expo, React Native,
-Zustand, FlashList y Expo Router.\
+Zustand, FlashList y Expo Router.
 Diseñado para ser rápido, fluido y extremadamente claro, con animaciones
 suaves, edición completa y persistencia local.
 
@@ -11,8 +11,8 @@ suaves, edición completa y persistencia local.
 
 NoteFlow organiza la información en tres tipos de contenido:
 
--   Notas --- texto libre\
--   Checklists --- listas de tareas\
+-   Notas --- texto libre
+-   Checklists --- listas de tareas
 -   Ideas --- notas rápidas con etiquetas y color
 
 Cada tipo tiene su propia vista, su propio detalle, su flujo de edición
@@ -26,56 +26,56 @@ y su sistema de archivado.
 
 #### Notas
 
--   Título, contenido y fecha\
--   Vista de detalle\
--   Edición completa\
--   Eliminación con confirmación\
--   Archivado\
+-   Título, contenido y fecha
+-   Vista de detalle
+-   Edición completa
+-   Eliminación con confirmación
+-   Archivado
 -   Feedback háptico
 
 #### Checklists
 
--   Items marcables\
--   Barra de progreso\
--   Edición de listas e items\
--   Archivado\
+-   Items marcables
+-   Barra de progreso
+-   Edición de listas e items
+-   Archivado
 -   Vibración al completar tareas
 
 #### Ideas
 
--   Etiquetas dinámicas\
--   Color personalizado\
--   Edición completa\
--   Archivado\
+-   Etiquetas dinámicas
+-   Color personalizado
+-   Edición completa
+-   Archivado
 -   Organización visual rápida
 
 ------------------------------------------------------------------------
 
 ## Rendimiento
 
--   FlashList en todas las pantallas\
--   Optimización para +50 elementos sin pérdida de FPS\
--   Re-render controlado\
+-   FlashList en todas las pantallas
+-   Optimización para +50 elementos sin pérdida de FPS
+-   Re-render controlado
 -   Búsqueda en tiempo real sin bloqueos
 
 ------------------------------------------------------------------------
 
 ## UI / UX
 
--   Tema claro y oscuro automático\
--   Sistema de tokens en constants/theme.ts\
--   Animaciones declarativas suaves (FadeInDown)\
--   Interacciones con feedback háptico\
--   Estados vacíos personalizados\
+-   Tema claro y oscuro automático
+-   Sistema de tokens en constants/theme.ts
+-   Animaciones declarativas suaves (FadeInDown)
+-   Interacciones con feedback háptico
+-   Estados vacíos personalizados
 -   Diseño limpio y minimalista
 
 ------------------------------------------------------------------------
 
 ## Estado global
 
--   Zustand como store principal\
--   Persistencia con AsyncStorage\
--   Rehidratación automática\
+-   Zustand como store principal
+-   Persistencia con AsyncStorage
+-   Rehidratación automática
 -   Stores unificados para notas, ideas y checklists
 
 ------------------------------------------------------------------------
@@ -83,9 +83,8 @@ y su sistema de archivado.
 ## Navegación
 
 -   Expo Router\
--   Tabs como navegación principal\
--   Rutas dinámicas \[id\].tsx\
--   Pantallas de edición en subcarpetas /editar\
+-   Tabs como navegación principal
+-   Rutas dinámicas \[id\].tsx
 -   Modal para creación de nuevas notas
 
 ------------------------------------------------------------------------
@@ -158,9 +157,9 @@ store/
 
 ## Documentación
 
--   idea.md → concepto del proyecto\
--   project-management.md → organización en Trello\
--   react-native-teoria.md → teoría de RN, Expo y rendimiento\
+-   idea.md → concepto del proyecto
+-   project-management.md → organización en Trello
+-   react-native-teoria.md → teoría de RN, Expo y rendimiento
 -   ai-setup.md → herramientas de IA usadas
 
 ------------------------------------------------------------------------
@@ -175,30 +174,30 @@ https://trello.com/b/I1L4Exy8/noteflow
 
 Se utilizan animaciones declarativas suaves con Reanimated:
 
--   FadeInDown\
--   Delays progresivos\
+-   FadeInDown
+-   Delays progresivos
 -   Transiciones limpias en pantallas de detalle
 
 ### Beneficios:
 
--   Entrada fluida del contenido\
--   Código simple y mantenible\
--   Compatible con FlashList\
+-   Entrada fluida del contenido
+-   Código simple y mantenible
+-   Compatible con FlashList
 -   Sin sobrecarga en pantallas de detalle
 
 ------------------------------------------------------------------------
 
 ## Tecnologías
 
--   Expo SDK 55\
--   React Native 0.76\
--   Expo Router\
--   Zustand + persist\
--   AsyncStorage\
--   FlashList\
--   Reanimated 3\
--   Zod\
--   Expo Haptics\
+-   Expo SDK 55
+-   React Native 0.76
+-   Expo Router
+-   Zustand + persist
+-   AsyncStorage
+-   FlashList
+-   Reanimated 3
+-   Zod
+-   Expo Haptics
 -   TypeScript
 
 ------------------------------------------------------------------------
