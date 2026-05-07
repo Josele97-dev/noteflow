@@ -196,7 +196,6 @@ Se utilizan animaciones declarativas suaves con Reanimated:
 -   AsyncStorage
 -   FlashList
 -   Reanimated 3
--   Zod
 -   Expo Haptics
 -   TypeScript
 
