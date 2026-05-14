@@ -13,7 +13,7 @@ NoteFlow organiza la información en tres tipos de contenido:
 
 -   Notas --- texto libre
 -   Checklists --- listas de tareas
--   Ideas --- notas rápidas con etiquetas y color
+-   Ideas --- notas rápidas con etiquetas, color y descripción
 
 Cada tipo tiene su propia vista, su propio detalle, su flujo de edición
 y su sistema de archivado.
@@ -82,7 +82,7 @@ y su sistema de archivado.
 
 ## Navegación
 
--   Expo Router\
+-   Expo Router
 -   Tabs como navegación principal
 -   Rutas dinámicas \[id\].tsx
 -   Modal para creación de nuevas notas

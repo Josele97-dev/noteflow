@@ -2,6 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { useTheme } from '../constants/theme';
 import { useNotesStore } from '../store/notesStore';
@@ -26,6 +27,7 @@ const AddRow = ({ value, onChange, onAdd, placeholder, theme }: any) => (
 export default function NuevaNota() {
   const router = useRouter();
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const { addNote, addChecklist, addIdea } = useNotesStore();
   const { tipo: tipoParam } = useLocalSearchParams<{ tipo: string }>();
 
@@ -60,8 +62,14 @@ export default function NuevaNota() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.background }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        style={[styles.container, { backgroundColor: theme.background }]}
+        contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: 40 }}
+      >
         <Text style={[styles.titulo, { color: theme.text }]}>Nueva entrada</Text>
 
         <View style={styles.tipos}>

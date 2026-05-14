@@ -1,6 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import * as api from '../lib/api';
 import { ChecklistNote, IdeaNote, Note } from '../types';
 
 interface NotesStore {
@@ -8,171 +7,140 @@ interface NotesStore {
   checklists: ChecklistNote[];
   ideas: IdeaNote[];
   _hydrated: boolean;
+  isLoading: boolean;
+  error: string | null;
 
-  addNote: (note: Note) => void;
-  addChecklist: (checklist: ChecklistNote) => void;
-  addIdea: (idea: IdeaNote) => void;
+  fetchAll: () => Promise<void>;
 
-  deleteNote: (id: string) => void;
-  deleteChecklist: (id: string) => void;
-  deleteIdea: (id: string) => void;
+  addNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addChecklist: (checklist: Omit<ChecklistNote, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addIdea: (idea: Omit<IdeaNote, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
 
-  archiveNote: (id: string) => void;
-  archiveChecklist: (id: string) => void;
-  archiveIdea: (id: string) => void;
+  deleteNote: (id: string) => Promise<void>;
+  deleteChecklist: (id: string) => Promise<void>;
+  deleteIdea: (id: string) => Promise<void>;
 
-  unarchiveNote: (id: string) => void;
-  unarchiveChecklist: (id: string) => void;
-  unarchiveIdea: (id: string) => void;
+  archiveNote: (id: string) => Promise<void>;
+  archiveChecklist: (id: string) => Promise<void>;
+  archiveIdea: (id: string) => Promise<void>;
 
-  updateNote: (id: string, data: Partial<Note>) => void;
-  updateChecklist: (id: string, data: Partial<ChecklistNote>) => void;
-  updateIdea: (id: string, data: Partial<IdeaNote>) => void;
+  unarchiveNote: (id: string) => Promise<void>;
+  unarchiveChecklist: (id: string) => Promise<void>;
+  unarchiveIdea: (id: string) => Promise<void>;
 
-  toggleChecklistItem: (checklistId: string, itemId: string) => void;
+  updateNote: (id: string, data: Partial<Note>) => Promise<void>;
+  updateChecklist: (id: string, data: Partial<ChecklistNote>) => Promise<void>;
+  updateIdea: (id: string, data: Partial<IdeaNote>) => Promise<void>;
 
-  updateChecklistItem: (checklistId: string, itemId: string, text: string) => void;
-  addChecklistItem: (checklistId: string, text: string) => void;
-  deleteChecklistItem: (checklistId: string, itemId: string) => void;
+  toggleChecklistItem: (checklistId: string, itemId: string) => Promise<void>;
 }
 
-const parseDates = <T extends { createdAt: any; updatedAt: any }>(items: T[]): T[] =>
-  items.map((item) => ({
-    ...item,
-    createdAt: new Date(item.createdAt),
-    updatedAt: new Date(item.updatedAt),
-  }));
+export const useNotesStore = create<NotesStore>()((set, get) => ({
+  notes: [],
+  checklists: [],
+  ideas: [],
+  _hydrated: false,
+  isLoading: false,
+  error: null,
 
-const setArchived = <T extends { id: string; archived: boolean; updatedAt: Date }>(
-  items: T[],
-  id: string,
-  archived: boolean
-): T[] =>
-  items.map((item) =>
-    item.id === id ? { ...item, archived, updatedAt: new Date() } : item
-  );
-
-export const useNotesStore = create<NotesStore>()(
-  persist(
-    (set) => ({
-      notes: [],
-      checklists: [],
-      ideas: [],
-      _hydrated: false,
-
-      addNote: (note) => set((s) => ({ notes: [...s.notes, note] })),
-      addChecklist: (checklist) => set((s) => ({ checklists: [...s.checklists, checklist] })),
-      addIdea: (idea) => set((s) => ({ ideas: [...s.ideas, idea] })),
-
-      deleteNote: (id) => set((s) => ({ notes: s.notes.filter((n) => n.id !== id) })),
-      deleteChecklist: (id) => set((s) => ({ checklists: s.checklists.filter((c) => c.id !== id) })),
-      deleteIdea: (id) => set((s) => ({ ideas: s.ideas.filter((i) => i.id !== id) })),
-
-      archiveNote: (id) => set((s) => ({ notes: setArchived(s.notes, id, true) })),
-      archiveChecklist: (id) => set((s) => ({ checklists: setArchived(s.checklists, id, true) })),
-      archiveIdea: (id) => set((s) => ({ ideas: setArchived(s.ideas, id, true) })),
-
-      unarchiveNote: (id) => set((s) => ({ notes: setArchived(s.notes, id, false) })),
-      unarchiveChecklist: (id) => set((s) => ({ checklists: setArchived(s.checklists, id, false) })),
-      unarchiveIdea: (id) => set((s) => ({ ideas: setArchived(s.ideas, id, false) })),
-
-      updateNote: (id, data) =>
-        set((s) => ({
-          notes: s.notes.map((n) =>
-            n.id === id ? { ...n, ...data, updatedAt: new Date() } : n
-          ),
-        })),
-
-      updateChecklist: (id, data) =>
-        set((s) => ({
-          checklists: s.checklists.map((c) =>
-            c.id === id ? { ...c, ...data, updatedAt: new Date() } : c
-          ),
-        })),
-
-      updateIdea: (id, data) =>
-        set((s) => ({
-          ideas: s.ideas.map((i) =>
-            i.id === id ? { ...i, ...data, updatedAt: new Date() } : i
-          ),
-        })),
-
-      toggleChecklistItem: (checklistId, itemId) =>
-        set((s) => ({
-          checklists: s.checklists.map((c) =>
-            c.id !== checklistId
-              ? c
-              : {
-                  ...c,
-                  updatedAt: new Date(),
-                  items: c.items.map((i) =>
-                    i.id === itemId
-                      ? { ...i, isCompleted: !i.isCompleted }
-                      : i
-                  ),
-                }
-          ),
-        })),
-
-      updateChecklistItem: (checklistId, itemId, text) =>
-        set((s) => ({
-          checklists: s.checklists.map((c) =>
-            c.id !== checklistId
-              ? c
-              : {
-                  ...c,
-                  updatedAt: new Date(),
-                  items: c.items.map((i) =>
-                    i.id === itemId ? { ...i, text } : i
-                  ),
-                }
-          ),
-        })),
-
-      addChecklistItem: (checklistId, text) =>
-        set((s) => ({
-          checklists: s.checklists.map((c) =>
-            c.id !== checklistId
-              ? c
-              : {
-                  ...c,
-                  updatedAt: new Date(),
-                  items: [
-                    ...c.items,
-                    {
-                      id: Math.random().toString(),
-                      text,
-                      isCompleted: false,
-                    },
-                  ],
-                }
-          ),
-        })),
-
-      deleteChecklistItem: (checklistId, itemId) =>
-        set((s) => ({
-          checklists: s.checklists.map((c) =>
-            c.id !== checklistId
-              ? c
-              : {
-                  ...c,
-                  updatedAt: new Date(),
-                  items: c.items.filter((i) => i.id !== itemId),
-                }
-          ),
-        })),
-    }),
-    {
-      name: 'noteflow-storage',
-      storage: createJSONStorage(() => AsyncStorage),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          state.notes = parseDates(state.notes);
-          state.checklists = parseDates(state.checklists);
-          state.ideas = parseDates(state.ideas);
-          state._hydrated = true;
-        }
-      },
+  fetchAll: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const [notes, checklists, ideas] = await Promise.all([
+        api.getNotes(),
+        api.getChecklists(),
+        api.getIdeas(),
+      ]);
+      set({ notes, checklists, ideas, _hydrated: true });
+    } catch (e) {
+      set({ error: 'Error al cargar datos', _hydrated: true });
+    } finally {
+      set({ isLoading: false });
     }
-  )
-);
+  },
+
+  addNote: async (note) => {
+    const created = await api.createNote({ title: note.title, content: note.content });
+    set((s) => ({ notes: [created, ...s.notes] }));
+  },
+
+  addChecklist: async (checklist) => {
+    const created = await api.createChecklist({ title: checklist.title, items: checklist.items });
+    set((s) => ({ checklists: [created, ...s.checklists] }));
+  },
+
+  addIdea: async (idea) => {
+    const created = await api.createIdea({ title: idea.title, content: idea.content, color: idea.color, tags: idea.tags });
+    set((s) => ({ ideas: [created, ...s.ideas] }));
+  },
+
+  deleteNote: async (id) => {
+    await api.deleteNote(id);
+    set((s) => ({ notes: s.notes.filter((n) => n.id !== id) }));
+  },
+
+  deleteChecklist: async (id) => {
+    await api.deleteChecklist(id);
+    set((s) => ({ checklists: s.checklists.filter((c) => c.id !== id) }));
+  },
+
+  deleteIdea: async (id) => {
+    await api.deleteIdea(id);
+    set((s) => ({ ideas: s.ideas.filter((i) => i.id !== id) }));
+  },
+
+  archiveNote: async (id) => {
+    await api.updateNote(id, { archived: true });
+    set((s) => ({ notes: s.notes.map((n) => n.id === id ? { ...n, archived: true } : n) }));
+  },
+
+  archiveChecklist: async (id) => {
+    await api.updateChecklist(id, { archived: true });
+    set((s) => ({ checklists: s.checklists.map((c) => c.id === id ? { ...c, archived: true } : c) }));
+  },
+
+  archiveIdea: async (id) => {
+    await api.updateIdea(id, { archived: true });
+    set((s) => ({ ideas: s.ideas.map((i) => i.id === id ? { ...i, archived: true } : i) }));
+  },
+
+  unarchiveNote: async (id) => {
+    await api.updateNote(id, { archived: false });
+    set((s) => ({ notes: s.notes.map((n) => n.id === id ? { ...n, archived: false } : n) }));
+  },
+
+  unarchiveChecklist: async (id) => {
+    await api.updateChecklist(id, { archived: false });
+    set((s) => ({ checklists: s.checklists.map((c) => c.id === id ? { ...c, archived: false } : c) }));
+  },
+
+  unarchiveIdea: async (id) => {
+    await api.updateIdea(id, { archived: false });
+    set((s) => ({ ideas: s.ideas.map((i) => i.id === id ? { ...i, archived: false } : i) }));
+  },
+
+  updateNote: async (id, data) => {
+    const updated = await api.updateNote(id, data);
+    set((s) => ({ notes: s.notes.map((n) => n.id === id ? updated : n) }));
+  },
+
+  updateChecklist: async (id, data) => {
+    const updated = await api.updateChecklist(id, data);
+    set((s) => ({ checklists: s.checklists.map((c) => c.id === id ? updated : c) }));
+  },
+
+  updateIdea: async (id, data) => {
+    const updated = await api.updateIdea(id, data);
+    set((s) => ({ ideas: s.ideas.map((i) => i.id === id ? updated : i) }));
+  },
+
+  toggleChecklistItem: async (checklistId, itemId) => {
+    const checklist = get().checklists.find((c) => c.id === checklistId);
+    if (!checklist) return;
+    const updatedItems = checklist.items.map((i) =>
+      i.id === itemId ? { ...i, isCompleted: !i.isCompleted } : i
+    );
+    const updated = await api.updateChecklist(checklistId, { items: updatedItems });
+    set((s) => ({ checklists: s.checklists.map((c) => c.id === checklistId ? updated : c) }));
+  },
+}));

@@ -12,10 +12,15 @@ export default function RootLayout() {
   const scheme = useColorScheme() ?? 'dark';
   const theme = scheme === 'dark' ? colors.dark : colors.light;
   const hydrated = useNotesStore((s) => s._hydrated);
+  const fetchAll = useNotesStore((s) => s.fetchAll);
 
   useEffect(() => {
     SystemUI.setBackgroundColorAsync(theme.background);
   }, [theme.background]);
+
+  useEffect(() => {
+    fetchAll();
+  }, []);
 
   useEffect(() => {
     if (hydrated) SplashScreen.hideAsync();
@@ -32,78 +37,14 @@ export default function RootLayout() {
         contentStyle: { backgroundColor: theme.background },
       }}
     >
-
-      <Stack.Screen
-        name="(tabs)"
-        options={{ headerShown: false }}
-      />
-
-      <Stack.Screen
-        name="notas/[id]"
-        options={{
-          title: 'Nota',
-          presentation: 'card',
-          animation: 'slide_from_right',
-        }}
-      />
-
-      <Stack.Screen
-        name="notas/editar/EditNoteScreen"
-        options={{
-          title: '',
-          presentation: 'modal',
-          animation: 'slide_from_bottom',
-          headerShown: false,
-        }}
-      />
-
-      <Stack.Screen
-        name="ideas/[id]"
-        options={{
-          title: 'Idea',
-          presentation: 'card',
-          animation: 'slide_from_right',
-        }}
-      />
-
-      <Stack.Screen
-        name="ideas/editar/EditIdeaScreen"
-        options={{
-          title: '',
-          presentation: 'modal',
-          animation: 'slide_from_bottom',
-          headerShown: false,
-        }}
-      />
-
-      <Stack.Screen
-        name="checklists/[id]"
-        options={{
-          title: 'Tarea',
-          presentation: 'card',
-          animation: 'slide_from_right',
-        }}
-      />
-
-      <Stack.Screen
-        name="checklists/editar/EditTaskScreen"
-        options={{
-          title: '',
-          presentation: 'modal',
-          animation: 'slide_from_bottom',
-          headerShown: false,
-        }}
-      />
-
-      <Stack.Screen
-        name="crear"
-        options={{
-          title: 'Crear',
-          presentation: 'modal',
-          animation: 'fade',
-        }}
-      />
-
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="notas/[id]" options={{ title: 'Nota', presentation: 'card', animation: 'slide_from_right' }} />
+      <Stack.Screen name="notas/editar/EditNoteScreen" options={{ title: '', presentation: 'modal', animation: 'slide_from_bottom', headerShown: false }} />
+      <Stack.Screen name="ideas/[id]" options={{ title: 'Idea', presentation: 'card', animation: 'slide_from_right' }} />
+      <Stack.Screen name="ideas/editar/EditIdeaScreen" options={{ title: '', presentation: 'modal', animation: 'slide_from_bottom', headerShown: false }} />
+      <Stack.Screen name="checklists/[id]" options={{ title: 'Tarea', presentation: 'card', animation: 'slide_from_right' }} />
+      <Stack.Screen name="checklists/editar/EditTaskScreen" options={{ title: '', presentation: 'modal', animation: 'slide_from_bottom', headerShown: false }} />
+      <Stack.Screen name="crear" options={{ title: 'Crear', presentation: 'modal', animation: 'fade', headerShown: false }} />
     </Stack>
   );
 }
