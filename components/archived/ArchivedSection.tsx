@@ -3,13 +3,12 @@ import { FlashList } from '@shopify/flash-list';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-// MISMO TRUCO QUE EN BASELIST
 const List = FlashList as unknown as React.ComponentType<any>;
 
 interface Props {
   title: string;
   data: any[];
-  renderItem: any; // igual que BaseList
+  renderItem: any;
 }
 
 export default function ArchivedSection({ title, data, renderItem }: Props) {
@@ -26,7 +25,7 @@ export default function ArchivedSection({ title, data, renderItem }: Props) {
       <List
         data={data}
         renderItem={renderItem}
-        estimatedItemSize={80}   // AHORA SÍ FUNCIONA
+        estimatedItemSize={80}   
         keyExtractor={(item: any, index: number) =>
           item?.id ?? index.toString()
         }

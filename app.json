@@ -13,6 +13,8 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.josele97.noteflow55",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
@@ -27,6 +29,8 @@
     "plugins": [
       "expo-router",
       "expo-system-ui",
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
       [
         "expo-splash-screen",
         {
@@ -44,6 +48,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "112ec34f-4e71-439a-9a4e-55458e1fedd5"
+      }
     }
   }
 }
