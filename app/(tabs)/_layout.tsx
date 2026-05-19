@@ -15,6 +15,7 @@ const TABS: Tab[] = [
   { name: 'checklists', title: 'Tareas',     tipo: 'tarea', icon: 'checkbox-outline'      },
   { name: 'ideas',      title: 'Ideas',      tipo: 'idea',  icon: 'bulb-outline'          },
   { name: 'archivados', title: 'Archivados',               icon: 'archive-outline'        },
+  { name: 'perfil', title: 'Perfil', icon: 'person-outline' },
 ];
 
 export default function TabsLayout() {

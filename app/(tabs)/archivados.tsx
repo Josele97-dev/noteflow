@@ -1,7 +1,7 @@
 import ArchivedSection from '@/components/archived/ArchivedSection';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -30,6 +30,7 @@ type ArchivedItem = {
 
 export default function ArchivadosScreen() {
   const theme = useTheme();
+
   const {
     _hydrated,
     notes,
@@ -45,116 +46,172 @@ export default function ArchivadosScreen() {
 
   const [busqueda, setBusqueda] = useState('');
   const [saliendoId, setSaliendoId] = useState<string | null>(null);
+  const [accionPendiente, setAccionPendiente] =
+    useState<'delete' | 'unarchive' | null>(null);
+  const [hiddenIds, setHiddenIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    const archivedIds = [
+      ...notes.filter(n => n.archived).map(n => n.id),
+      ...checklists.filter(c => c.archived).map(c => c.id),
+      ...ideas.filter(i => i.archived).map(i => i.id),
+    ];
+
+    setHiddenIds(prev =>
+      prev.filter(id => archivedIds.includes(id))
+    );
+  }, [notes, checklists, ideas]);
 
   if (!_hydrated) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.background, justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[styles.container, styles.center, { backgroundColor: theme.background }]}>
         <ActivityIndicator color={theme.primary} />
       </View>
     );
   }
 
-  const q = busqueda.toLowerCase();
-  const matches = (title: string) => title.toLowerCase().includes(q);
+  const matches = (title: string) =>
+    title.toLowerCase().includes(busqueda.toLowerCase());
+
+  const mapItems = <T extends { id: string; title: string; archived: boolean }>(
+    data: T[],
+    mapper: (item: T) => ArchivedItem
+  ) =>
+    data
+      .filter(
+        item =>
+          item.archived &&
+          matches(item.title) &&
+          !hiddenIds.includes(item.id)
+      )
+      .map(mapper);
 
   const sections = [
     {
-      label: 'NOTAS',
-      items: notes
-        .filter((n) => n.archived && matches(n.title))
-        .map<ArchivedItem>((n) => ({
-          id: n.id,
-          title: n.title,
-          subtitle: n.content,
-          icon: 'file-text',
-          type: 'nota',
-        })),
+      title: 'NOTAS',
+      data: mapItems(notes, n => ({
+        id: n.id,
+        title: n.title,
+        subtitle: n.content,
+        icon: 'file-text',
+        type: 'nota',
+      })),
     },
     {
-      label: 'TAREAS',
-      items: checklists
-        .filter((c) => c.archived && matches(c.title))
-        .map<ArchivedItem>((c) => ({
-          id: c.id,
-          title: c.title,
-          subtitle: `${c.items.filter((i) => i.isCompleted).length}/${c.items.length} completadas`,
-          icon: 'check-circle',
-          type: 'tarea',
-        })),
+      title: 'TAREAS',
+      data: mapItems(checklists, c => ({
+        id: c.id,
+        title: c.title,
+        subtitle: `${c.items.filter(i => i.isCompleted).length}/${c.items.length} completadas`,
+        icon: 'check-circle',
+        type: 'tarea',
+      })),
     },
     {
-      label: 'IDEAS',
-      items: ideas
-        .filter((i) => i.archived && matches(i.title))
-        .map<ArchivedItem>((i) => ({
-          id: i.id,
-          title: i.title,
-          subtitle: i.tags.length > 0 ? i.tags.join(', ') : '',
-          icon: 'zap',
-          color: i.color,
-          type: 'idea',
-        })),
+      title: 'IDEAS',
+      data: mapItems(ideas, i => ({
+        id: i.id,
+        title: i.title,
+        subtitle: i.tags.join(', '),
+        icon: 'zap',
+        color: i.color,
+        type: 'idea',
+      })),
     },
   ];
 
-  const total = sections.reduce((acc, s) => acc + s.items.length, 0);
+  const total = sections.reduce((a, s) => a + s.data.length, 0);
 
   const activarSalida = (id: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSaliendoId(id);
   };
 
-  const confirmarEliminar = (id: string, nombre: string) => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+  const confirmarEliminar = (id: string, nombre: string) =>
     Alert.alert('Eliminar', `¿Seguro que quieres eliminar "${nombre}"?`, [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Eliminar',
         style: 'destructive',
         onPress: () => {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          setAccionPendiente('delete');
           activarSalida(id);
         },
       },
     ]);
-  };
 
   const onFinish = (id: string, type: ItemType) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (type === 'nota') unarchiveNote(id);
-    else if (type === 'tarea') unarchiveChecklist(id);
-    else unarchiveIdea(id);
+    setHiddenIds(prev => [...prev, id]);
+
+    if (accionPendiente === 'delete') {
+      if (type === 'nota') deleteNote(id);
+      else if (type === 'tarea') deleteChecklist(id);
+      else deleteIdea(id);
+    } else {
+      if (type === 'nota') unarchiveNote(id);
+      else if (type === 'tarea') unarchiveChecklist(id);
+      else unarchiveIdea(id);
+    }
+
     setSaliendoId(null);
+    setAccionPendiente(null);
   };
 
   const renderCard = (item: ArchivedItem) => {
-    const { textColor, textSecondary, btnColor, iconColor, dangerBtnColor, dangerIconColor } =
-      getColoredItemStyles(item.color, theme);
+    const s = getColoredItemStyles(item.color, theme);
 
     return (
       <View style={[styles.card, { backgroundColor: item.color || theme.card }]}>
-        <Feather name={item.icon} size={18} color={iconColor} style={{ marginRight: 12 }} />
+        <Feather
+          name={item.icon}
+          size={18}
+          color={s.iconColor}
+          style={{ marginRight: 12 }}
+        />
+
         <View style={{ flex: 1 }}>
-          <Text style={[styles.cardTitle, { color: textColor }]}>{item.title}</Text>
-          {item.subtitle ? (
-            <Text style={[styles.cardSub, { color: textSecondary }]} numberOfLines={1}>
+          <Text style={[styles.cardTitle, { color: s.textColor }]}>
+            {item.title}
+          </Text>
+
+          {!!item.subtitle && (
+            <Text
+              numberOfLines={1}
+              style={[styles.cardSub, { color: s.textSecondary }]}
+            >
               {item.subtitle}
             </Text>
-          ) : null}
+          )}
         </View>
 
         <TouchableOpacity
-          style={[styles.accionBtn, { backgroundColor: btnColor }]}
-          onPress={() => activarSalida(item.id)}
+          style={[styles.accionBtn, { backgroundColor: s.btnColor }]}
+          onPress={() => {
+            setAccionPendiente('unarchive');
+            activarSalida(item.id);
+          }}
         >
-          <Feather name="corner-up-left" size={16} color={iconColor} />
+          <Feather
+            name="corner-up-left"
+            size={16}
+            color={s.iconColor}
+          />
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.accionBtn, { backgroundColor: dangerBtnColor, marginLeft: 8 }]}
-          onPress={() => confirmarEliminar(item.id, item.title)}
+          style={[
+            styles.accionBtn,
+            { backgroundColor: s.dangerBtnColor, marginLeft: 8 },
+          ]}
+          onPress={() =>
+            confirmarEliminar(item.id, item.title)
+          }
         >
-          <Feather name="trash-2" size={16} color={dangerIconColor} />
+          <Feather
+            name="trash-2"
+            size={16}
+            color={s.dangerIconColor}
+          />
         </TouchableOpacity>
       </View>
     );
@@ -162,7 +219,10 @@ export default function ArchivadosScreen() {
 
   const renderItem = ({ item }: { item: ArchivedItem }) =>
     saliendoId === item.id ? (
-      <FadeOutLeft duration={250} onFinish={() => onFinish(item.id, item.type)}>
+      <FadeOutLeft
+        duration={250}
+        onFinish={() => onFinish(item.id, item.type)}
+      >
         {renderCard(item)}
       </FadeOutLeft>
     ) : (
@@ -172,30 +232,43 @@ export default function ArchivadosScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.search, { backgroundColor: theme.card }]}>
-        <Feather name="search" size={18} color={theme.textSecondary} />
+        <Feather
+          name="search"
+          size={18}
+          color={theme.textSecondary}
+        />
+
         <TextInput
-          style={[styles.searchInput, { color: theme.text }]}
-          placeholder="Buscar archivados..."
-          placeholderTextColor={theme.textTertiary}
           value={busqueda}
           onChangeText={setBusqueda}
+          placeholder="Buscar archivados..."
+          placeholderTextColor={theme.textTertiary}
+          style={[styles.searchInput, { color: theme.text }]}
         />
       </View>
 
-      {total === 0 ? (
-        <View style={styles.empty}>
+      {!total ? (
+        <View style={[styles.empty, styles.center]}>
           <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
             {busqueda ? 'Sin resultados' : 'No hay elementos archivados'}
           </Text>
+
           <Text style={[styles.emptySubtext, { color: theme.textTertiary }]}>
-            {busqueda ? 'Prueba otra búsqueda' : 'Archiva notas, tareas o ideas para verlas aquí'}
+            {busqueda
+              ? 'Prueba otra búsqueda'
+              : 'Archiva notas, tareas o ideas para verlas aquí'}
           </Text>
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ padding: 16 }}>
-          <ArchivedSection title="NOTAS" data={sections[0].items} renderItem={renderItem} />
-          <ArchivedSection title="TAREAS" data={sections[1].items} renderItem={renderItem} />
-          <ArchivedSection title="IDEAS" data={sections[2].items} renderItem={renderItem} />
+          {sections.map(section => (
+            <ArchivedSection
+              key={section.title}
+              title={section.title}
+              data={section.data}
+              renderItem={renderItem}
+            />
+          ))}
         </ScrollView>
       )}
     </View>
@@ -204,6 +277,12 @@ export default function ArchivadosScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
   search: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -211,10 +290,27 @@ const styles = StyleSheet.create({
     margin: 16,
     borderRadius: 12,
   },
-  searchInput: { marginLeft: 10, flex: 1, fontSize: 16 },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  emptyText: { fontSize: 18, fontWeight: '600' },
-  emptySubtext: { fontSize: 14, marginTop: 8, textAlign: 'center', paddingHorizontal: 40 },
+
+  searchInput: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 16,
+  },
+
+  empty: { flex: 1 },
+
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+
+  emptySubtext: {
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
+    paddingHorizontal: 40,
+  },
+
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -222,7 +318,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 8,
   },
-  cardTitle: { fontSize: 16, fontWeight: '600' },
-  cardSub: { fontSize: 13, marginTop: 2 },
-  accionBtn: { padding: 8, borderRadius: 8 },
+
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  cardSub: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+
+  accionBtn: {
+    padding: 8,
+    borderRadius: 8,
+  },
 });
