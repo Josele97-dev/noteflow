@@ -92,27 +92,31 @@ export default function ArchivadosScreen() {
       data: mapItems(notes, n => ({
         id: n.id,
         title: n.title,
-        subtitle: n.content,
+        subtitle: n.content ?? '',   // ← SEGURO
         icon: 'file-text',
         type: 'nota',
       })),
     },
     {
       title: 'TAREAS',
-      data: mapItems(checklists, c => ({
-        id: c.id,
-        title: c.title,
-        subtitle: `${c.items.filter(i => i.isCompleted).length}/${c.items.length} completadas`,
-        icon: 'check-circle',
-        type: 'tarea',
-      })),
+      data: mapItems(checklists, c => {
+        const items = c.items ?? []; // ← SEGURO
+        const completed = items.filter(i => i?.isCompleted).length;
+        return {
+          id: c.id,
+          title: c.title,
+          subtitle: `${completed}/${items.length} completadas`,
+          icon: 'check-circle',
+          type: 'tarea',
+        };
+      }),
     },
     {
       title: 'IDEAS',
       data: mapItems(ideas, i => ({
         id: i.id,
         title: i.title,
-        subtitle: i.tags.join(', '),
+        subtitle: (i.tags ?? []).join(', '), // ← SEGURO
         icon: 'zap',
         color: i.color,
         type: 'idea',

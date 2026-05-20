@@ -2,11 +2,11 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../constants/theme';
@@ -37,51 +37,121 @@ export default function PerfilScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.background, justifyContent: 'center', alignItems: 'center' }]}>
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: theme.background,
+            justifyContent: 'center',
+            alignItems: 'center',
+          },
+        ]}
+      >
         <ActivityIndicator color={theme.primary} />
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background, paddingTop: insets.top + 20 }]}>
-      <View style={[styles.avatar, { backgroundColor: theme.primary }]}>
-        <Text style={styles.avatarText}>
-          {profile?.name?.charAt(0).toUpperCase() ?? user?.email?.charAt(0).toUpperCase()}
-        </Text>
-      </View>
-
-      <Text style={[styles.name, { color: theme.text }]}>
-        {profile?.name ?? 'Sin nombre'}
-      </Text>
-
-      <Text style={[styles.email, { color: theme.textSecondary }]}>
-        {user?.email}
-      </Text>
-
-      <TouchableOpacity
-        style={[styles.btn, { backgroundColor: theme.danger }]}
-        onPress={logout}
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.background, paddingTop: insets.top + 40 },
+      ]}
+    >
+      {/* CARD CENTRAL */}
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: theme.card, borderColor: theme.border },
+        ]}
       >
-        <Text style={styles.btnText}>Cerrar sesión</Text>
-      </TouchableOpacity>
+        {/* Avatar */}
+        <View
+          style={[
+            styles.avatar,
+            { backgroundColor: theme.primary + '33' },
+          ]}
+        >
+          <Text style={styles.avatarText}>
+            {profile?.name?.charAt(0).toUpperCase() ??
+              user?.email?.charAt(0).toUpperCase()}
+          </Text>
+        </View>
+
+        {/* Nombre */}
+        <Text style={[styles.name, { color: theme.text }]}>
+          {profile?.name ?? 'Sin nombre'}
+        </Text>
+
+        {/* Email */}
+        <Text style={[styles.email, { color: theme.textSecondary }]}>
+          {user?.email}
+        </Text>
+
+        {/* Botón logout */}
+        <TouchableOpacity
+          style={[styles.btn, { backgroundColor: theme.danger }]}
+          activeOpacity={0.85}
+          onPress={logout}
+        >
+          <Text style={styles.btnText}>Cerrar sesión</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, alignItems: 'center' },
+  container: { flex: 1, paddingHorizontal: 24 },
+
+  card: {
+    borderWidth: 1,
+    borderRadius: 26,
+    padding: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
   },
-  avatarText: { fontSize: 32, fontWeight: '700', color: '#fff' },
-  name: { fontSize: 24, fontWeight: '700', marginBottom: 8 },
-  email: { fontSize: 16, marginBottom: 40 },
-  btn: { padding: 16, borderRadius: 12, alignItems: 'center', width: '100%' },
-  btnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+
+  avatarText: {
+    fontSize: 38,
+    fontWeight: '800',
+    color: '#fff',
+  },
+
+  name: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+
+  email: {
+    fontSize: 16,
+    marginBottom: 26,
+  },
+
+  btn: {
+    height: 56,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    marginTop: 10,
+  },
+
+  btnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
 });

@@ -11,21 +11,32 @@ interface Props {
 
 export default function IdeaCard({ idea, onPress }: Props) {
   const theme = useTheme();
-  const { textColor, textSecondary, iconColor, btnColor } = getColoredItemStyles(idea.color, theme);
+  const { textColor, textSecondary, iconColor, btnColor } =
+    getColoredItemStyles(idea.color, theme);
+
+  const tags = Array.isArray(idea.tags) ? idea.tags : [];
 
   return (
     <TouchableOpacity
-      style={[styles.card, { backgroundColor: idea.color || theme.card, borderColor: theme.border }]}
+      style={[
+        styles.card,
+        { backgroundColor: idea.color || theme.card, borderColor: theme.border },
+      ]}
       onPress={onPress}
     >
       <View style={styles.row}>
-        <Ionicons name="bulb-outline" size={22} color={iconColor} style={{ marginRight: 10 }} />
+        <Ionicons
+          name="bulb-outline"
+          size={22}
+          color={iconColor}
+          style={{ marginRight: 10 }}
+        />
         <Text style={[styles.title, { color: textColor }]}>{idea.title}</Text>
       </View>
 
-      {idea.tags.length > 0 && (
+      {tags.length > 0 && (
         <View style={styles.tags}>
-          {idea.tags.map((tag, index) => (
+          {tags.map((tag, index) => (
             <View key={index} style={[styles.tag, { backgroundColor: btnColor }]}>
               <Text style={[styles.tagText, { color: textSecondary }]}>#{tag}</Text>
             </View>

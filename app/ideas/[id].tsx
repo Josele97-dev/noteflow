@@ -18,6 +18,8 @@ export default function IdeaDetalle() {
 
   if (!data) return <View style={{ flex: 1 }} />;
 
+  const tags = Array.isArray(data.tags) ? data.tags : [];
+
   const fecha = new Date(data.createdAt).toLocaleDateString('es-ES', {
     day: 'numeric',
     month: 'long',
@@ -75,15 +77,18 @@ export default function IdeaDetalle() {
           </FadeInDown>
         )}
 
-        <FadeInDown duration={400} offset={-30} delay={200 + baseDelay}>
-          <View style={styles.tags}>
-            {data.tags.map((tag, i) => (
-              <View key={i} style={styles.tag}>
-                <Text style={styles.tagText}>#{tag}</Text>
-              </View>
-            ))}
-          </View>
-        </FadeInDown>
+        {/* 🔥 Render seguro de tags */}
+        {tags.length > 0 && (
+          <FadeInDown duration={400} offset={-30} delay={200 + baseDelay}>
+            <View style={styles.tags}>
+              {tags.map((tag, i) => (
+                <View key={i} style={styles.tag}>
+                  <Text style={styles.tagText}>#{tag}</Text>
+                </View>
+              ))}
+            </View>
+          </FadeInDown>
+        )}
       </ScrollView>
 
       <FadeInDown duration={400} offset={-30} delay={300 + baseDelay}>

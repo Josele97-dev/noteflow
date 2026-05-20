@@ -31,7 +31,7 @@ export default function IdeasScreen() {
   return (
     <BaseList
       data={activas}
-      searchKeys={(i) => [i.title, ...i.tags]}
+      searchKeys={(i) => [i.title, ...(i.tags ?? [])]}   
       searchPlaceholder="Buscar ideas o etiquetas..."
       emptyTitle="No hay ideas aún"
       emptySubtitle="Pulsa + para crear una"
