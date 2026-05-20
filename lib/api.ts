@@ -1,9 +1,11 @@
-import * as SecureStore from 'expo-secure-store';
+import auth from '@react-native-firebase/auth';
 
 const BASE_URL = 'https://noteflow-api.vercel.app/api';
 
 async function getToken() {
-  return await SecureStore.getItemAsync('token');
+  const user = auth().currentUser;
+  if (!user) return null;
+  return await user.getIdToken();
 }
 
 async function authHeaders() {
@@ -14,7 +16,6 @@ async function authHeaders() {
   };
 }
 
-// AUTH
 export async function register(email: string, password: string) {
   const res = await fetch(`${BASE_URL}/auth/register`, {
     method: 'POST',
@@ -32,16 +33,11 @@ export async function login(email: string, password: string) {
     body: JSON.stringify({ email, password }),
   });
   if (!res.ok) throw new Error('Error al iniciar sesión');
-  const data = await res.json();
-  await SecureStore.setItemAsync('token', data.token);
-  return data;
+  return res.json();
 }
 
-export async function logout() {
-  await SecureStore.deleteItemAsync('token');
-}
+export async function logout() {}
 
-// NOTAS
 export async function getNotes() {
   const res = await fetch(`${BASE_URL}/notes`, { headers: await authHeaders() });
   if (!res.ok) throw new Error('Error al cargar notas');
@@ -76,7 +72,6 @@ export async function deleteNote(id: string) {
   if (!res.ok) throw new Error('Error al eliminar nota');
 }
 
-// IDEAS
 export async function getIdeas() {
   const res = await fetch(`${BASE_URL}/ideas`, { headers: await authHeaders() });
   if (!res.ok) throw new Error('Error al cargar ideas');
@@ -111,7 +106,6 @@ export async function deleteIdea(id: string) {
   if (!res.ok) throw new Error('Error al eliminar idea');
 }
 
-// TAREAS
 export async function getChecklists() {
   const res = await fetch(`${BASE_URL}/checklists`, { headers: await authHeaders() });
   if (!res.ok) throw new Error('Error al cargar tareas');
