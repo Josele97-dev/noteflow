@@ -2,18 +2,22 @@ import { useColorScheme } from 'react-native';
 
 export const colors = {
   light: {
-    primary: '#6C63FF',
-    background: '#f5f5f5',
+    primary: '#0A4D9C',
+    primarySubtle: '#EBF1FB',      // azul-50: para tags, pills, fondos secundarios
+    primaryMuted: 'rgba(10,77,156,0.12)', // para bordes con tinte azul
+    background: '#EBF1FB',         // fondo general con tinte azul suave
     card: '#ffffff',
     text: '#1a1a1a',
     textSecondary: '#666666',
     textTertiary: '#999999',
-    border: '#eeeeee',
+    border: 'rgba(10,77,156,0.12)',
     danger: '#ff4444',
     success: '#4CAF50',
   },
   dark: {
-    primary: '#8B85FF',
+    primary: '#0A4D9C',
+    primarySubtle: 'rgba(10,77,156,0.18)',
+    primaryMuted: 'rgba(10,77,156,0.25)',
     background: '#121212',
     card: '#1e1e1e',
     text: '#ffffff',
@@ -57,10 +61,9 @@ export const borderRadius = {
   full: 999,
 };
 
-
 export type Theme = typeof colors.light;
 
 export function useTheme(): Theme {
-  const scheme = useColorScheme() ?? 'light'; 
+  const scheme = useColorScheme() ?? 'light';
   return scheme === 'dark' ? colors.dark : colors.light;
 }

@@ -1,7 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { useTheme } from '../constants/theme';
@@ -28,6 +28,8 @@ export default function NuevaNota() {
   const router = useRouter();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const scheme = useColorScheme() ?? 'light';
+  const isDark = scheme === 'dark';
   const { addNote, addChecklist, addIdea } = useNotesStore();
   const { tipo: tipoParam } = useLocalSearchParams<{ tipo: string }>();
 
@@ -45,6 +47,12 @@ export default function NuevaNota() {
   const removeItem = (setter: any, i: number) => setter((p: string[]) => p.filter((_, idx) => idx !== i));
 
   const inputStyle = [styles.input, { backgroundColor: theme.card, borderColor: theme.border, color: theme.text }];
+
+  // Claro: fondo azul primario, texto blanco
+  // Oscuro: fondo card (#1e1e1e), texto normal
+  const headerBg = isDark ? theme.card : theme.primary;
+  const headerTextColor = isDark ? theme.text : '#ffffff';
+  const saveBtnBg = isDark ? theme.primary : 'rgba(255,255,255,0.2)';
 
   const guardar = async () => {
     setErrors({});
@@ -66,16 +74,28 @@ export default function NuevaNota() {
       style={{ flex: 1, backgroundColor: theme.background }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <View style={[styles.header, { backgroundColor: headerBg, paddingTop: insets.top + 12 }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Text style={[styles.backIcon, { color: headerTextColor }]}>✕</Text>
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: headerTextColor }]}>Nueva entrada</Text>
+        <TouchableOpacity onPress={guardar} style={[styles.saveBtn, { backgroundColor: saveBtnBg }]}>
+          <Text style={styles.saveBtnText}>Guardar</Text>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView
         style={[styles.container, { backgroundColor: theme.background }]}
-        contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingTop: 20, paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
       >
-        <Text style={[styles.titulo, { color: theme.text }]}>Nueva entrada</Text>
-
         <View style={styles.tipos}>
           {TIPOS.map((t) => (
-            <TouchableOpacity key={t} style={[styles.tipoBtn, { borderColor: theme.border }, tipo === t && { backgroundColor: theme.primary, borderColor: theme.primary }]}
-              onPress={() => { setTipo(t); setErrors({}); }}>
+            <TouchableOpacity
+              key={t}
+              style={[styles.tipoBtn, { borderColor: theme.border }, tipo === t && { backgroundColor: theme.primary, borderColor: theme.primary }]}
+              onPress={() => { setTipo(t); setErrors({}); }}
+            >
               <Text style={[styles.tipoText, { color: tipo === t ? '#fff' : theme.textSecondary }, tipo === t && { fontWeight: '600' }]}>
                 {t.charAt(0).toUpperCase() + t.slice(1)}
               </Text>
@@ -119,26 +139,51 @@ export default function NuevaNota() {
           <Text style={[styles.label, { color: theme.text }]}>Descripción</Text>
           <TextInput style={[...inputStyle, styles.textarea]} placeholder="Describe tu idea..." placeholderTextColor={theme.textTertiary} value={content} onChangeText={setContent} multiline />
         </>}
-
-        <TouchableOpacity style={[styles.boton, { backgroundColor: theme.primary }]} onPress={guardar}>
-          <Text style={styles.botonText}>Guardar</Text>
-        </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    gap: 12,
+  },
+  backBtn: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backIcon: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  saveBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+  },
+  saveBtnText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   container: { flex: 1, padding: 20 },
-  titulo: { fontSize: 24, fontWeight: '700', marginBottom: 20 },
   tipos: { flexDirection: 'row', gap: 10, marginBottom: 20 },
   tipoBtn: { flex: 1, padding: 10, borderRadius: 8, borderWidth: 1, alignItems: 'center' },
   tipoText: { fontSize: 14 },
   input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 8, fontSize: 16 },
   textarea: { height: 120, textAlignVertical: 'top' },
   error: { fontSize: 13, marginBottom: 8 },
-  boton: { padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 20, marginBottom: 40 },
-  botonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   row: { flexDirection: 'row', gap: 10, marginBottom: 8, alignItems: 'center' },
   addBtn: { padding: 12, borderRadius: 8 },
   itemRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },

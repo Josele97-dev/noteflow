@@ -3,7 +3,7 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { Tabs, usePathname, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../constants/theme';
 
@@ -26,8 +26,11 @@ export default function TabsLayout() {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  const scheme = useColorScheme() ?? 'light';
+  const isDark = scheme === 'dark';
 
-  const { card, text, border, primary, textTertiary } = useTheme();
+  const theme = useTheme();
+  const { card, text, border, primary, textTertiary, primarySubtle } = theme;
 
   const currentTab = TABS.find((t) => pathname.includes(t.name));
 
@@ -56,15 +59,25 @@ export default function TabsLayout() {
     return unsub;
   }, []);
 
+  // En modo claro: header azul primario, texto e iconos blancos
+  // En modo oscuro: comportamiento original
+  const headerBg = isDark ? card : primary;
+  const headerTextColor = isDark ? text : '#ffffff';
+  const avatarBg = isDark ? primary + '22' : 'rgba(255,255,255,0.2)';
+  const avatarTextColor = isDark ? primary : '#ffffff';
+
   return (
     <View style={{ flex: 1 }}>
       <Tabs
         screenOptions={{
-          headerStyle: { backgroundColor: card },
-          headerTitleStyle: { color: text },
+          headerStyle: { backgroundColor: headerBg },
+          headerTitleStyle: { color: headerTextColor },
+          headerTintColor: headerTextColor,
+
+          // Tab bar: blanco en claro, card en oscuro
           tabBarStyle: {
-            backgroundColor: card,
-            borderTopColor: border,
+            backgroundColor: isDark ? card : '#ffffff',
+            borderTopColor: isDark ? border : 'rgba(10,77,156,0.12)',
           },
           tabBarActiveTintColor: primary,
           tabBarInactiveTintColor: textTertiary,
@@ -78,7 +91,7 @@ export default function TabsLayout() {
                 height: 34,
                 borderRadius: 17,
                 overflow: 'hidden',
-                backgroundColor: primary + '22',
+                backgroundColor: avatarBg,
                 justifyContent: 'center',
                 alignItems: 'center',
               }}
@@ -91,7 +104,7 @@ export default function TabsLayout() {
               ) : (
                 <Text
                   style={{
-                    color: primary,
+                    color: avatarTextColor,
                     fontWeight: '700',
                     fontSize: 15,
                   }}
@@ -131,7 +144,6 @@ export default function TabsLayout() {
             backgroundColor: primary,
             justifyContent: 'center',
             alignItems: 'center',
-
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,

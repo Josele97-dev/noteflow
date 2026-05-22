@@ -5,14 +5,17 @@ import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../constants/theme';
 import { useNotesStore } from '../../../store/notesStore';
 
@@ -34,8 +37,7 @@ export default function EditTaskScreen() {
   const [subtareas, setSubtareas] = useState<Subtarea[]>(task?.items ?? []);
   const { animStyle, exit } = useExitAnimation();
 
-  useEffect(() => {
-  }, []);
+  useEffect(() => {}, []);
 
   if (!task) return null;
 
@@ -70,66 +72,94 @@ export default function EditTaskScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    // View sin SafeAreaView — EditHeader gestiona el safe area superior
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Stack.Screen options={{ headerShown: false }} />
 
       <Animated.View style={[{ flex: 1 }, animStyle]}>
-        <ScrollView
-          contentContainerStyle={{ padding: 20, paddingTop: 10, paddingBottom: insets.bottom + 40 }}
+        <EditHeader
+          title="Editar tarea"
+          onBack={router.back}
+          onSave={save}
+        />
+
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          <EditHeader title="Editar tarea" onBack={router.back} marginTop={insets.top} />
-
-          <Text style={[styles.label, { color: theme.textSecondary }]}>Título</Text>
-
-          <TextInput
-            value={title}
-            onChangeText={setTitle}
-            placeholder="Título de la tarea"
-            placeholderTextColor={theme.textSecondary}
-            style={[styles.titleInput, { color: theme.text, backgroundColor: theme.card }]}
-          />
-
-          <Text style={[styles.label, { color: theme.textSecondary }]}>Subtareas</Text>
-
-          {subtareas.map((sub) => (
-            <FadeInDown key={sub.id}>
-              <TextInput
-                value={sub.text}
-                onChangeText={(text) => updateText(sub.id, text)}
-                onBlur={() => handleBlur(sub.id)}
-                placeholder="Subtarea..."
-                placeholderTextColor={theme.textSecondary}
-                style={[styles.input, { color: theme.text, backgroundColor: theme.card }]}
-              />
-            </FadeInDown>
-          ))}
-
-          <TouchableOpacity
-            style={[styles.addBtn, { borderColor: theme.border, opacity: hasEmptySubtarea ? 0.4 : 1 }]}
-            disabled={hasEmptySubtarea}
-            onPress={addSubtarea}
+          <ScrollView
+            contentContainerStyle={{
+              padding: 16,
+              paddingBottom: insets.bottom + 40,
+            }}
           >
-            <Text style={{ color: theme.text }}>+ Añadir subtarea</Text>
-          </TouchableOpacity>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Título</Text>
+            <TextInput
+              value={title}
+              onChangeText={setTitle}
+              placeholder="Título de la tarea"
+              placeholderTextColor={theme.textTertiary}
+              style={[styles.titleInput, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
+            />
 
-          <TouchableOpacity
-            style={[styles.saveBtn, { backgroundColor: theme.primary }]}
-            onPress={save}
-          >
-            <Text style={styles.saveText}>Guardar cambios</Text>
-          </TouchableOpacity>
-        </ScrollView>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Subtareas</Text>
+
+            {subtareas.map((sub) => (
+              <FadeInDown key={sub.id}>
+                <TextInput
+                  value={sub.text}
+                  onChangeText={(text) => updateText(sub.id, text)}
+                  onBlur={() => handleBlur(sub.id)}
+                  placeholder="Subtarea..."
+                  placeholderTextColor={theme.textTertiary}
+                  style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
+                />
+              </FadeInDown>
+            ))}
+
+            <TouchableOpacity
+              style={[styles.addBtn, { borderColor: theme.border, opacity: hasEmptySubtarea ? 0.4 : 1 }]}
+              disabled={hasEmptySubtarea}
+              onPress={addSubtarea}
+            >
+              <Text style={{ color: theme.text }}>+ Añadir subtarea</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </Animated.View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  label: { fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 10, marginBottom: 8 },
-  titleInput: { padding: 16, borderRadius: 14, fontSize: 18, fontWeight: '600', marginBottom: 20 },
-  input: { padding: 14, borderRadius: 12, marginBottom: 12 },
-  addBtn: { padding: 12, borderWidth: 1, borderRadius: 10, alignItems: 'center', marginTop: 10 },
-  saveBtn: { marginTop: 20, padding: 16, borderRadius: 12, alignItems: 'center' },
-  saveText: { color: '#fff', fontWeight: '600' },
+  label: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  titleInput: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  input: {
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 10,
+  },
+  addBtn: {
+    padding: 12,
+    borderWidth: 1,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
 });

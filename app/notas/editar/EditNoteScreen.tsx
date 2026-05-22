@@ -2,18 +2,18 @@ import { FadeInDown } from '@/components/animations/FadeInDown';
 import { EditHeader } from '@/components/ui/EditHeader';
 import { useExitAnimation } from '@/hooks/useExitAnimation';
 import * as Haptics from 'expo-haptics';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
+  View,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../constants/theme';
 import { useNotesStore } from '../../../store/notesStore';
 
@@ -39,26 +39,25 @@ export default function EditNoteScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={insets.top + 20}
-      >
-        <Animated.View style={[{ flex: 1 }, animStyle]}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Stack.Screen options={{ headerShown: false }} />
+
+      <Animated.View style={[{ flex: 1 }, animStyle]}>
+        <EditHeader title="Editar nota" onBack={router.back} onSave={save} />
+
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <ScrollView
-            contentContainerStyle={{ padding: 20, paddingTop: 10, paddingBottom: insets.bottom + 40 }}
+            contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 40 }}
             showsVerticalScrollIndicator={false}
           >
-            <FadeInDown duration={300} offset={-20}>
-              <EditHeader title="Editar nota" onBack={router.back} marginTop={insets.top} />
-            </FadeInDown>
-
             <FadeInDown duration={300} offset={-20} delay={80}>
               <TextInput
-                style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border, fontSize: 20, fontWeight: '600' }]}
+                style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border, fontSize: 18, fontWeight: '600' }]}
                 placeholder="Título"
-                placeholderTextColor={theme.textSecondary}
+                placeholderTextColor={theme.textTertiary}
                 value={title}
                 onChangeText={setTitle}
               />
@@ -66,7 +65,7 @@ export default function EditNoteScreen() {
 
             <FadeInDown duration={300} offset={-20} delay={160}>
               <TextInput
-                style={[styles.input, { color: theme.textSecondary, backgroundColor: theme.card, borderColor: theme.border, minHeight: 200, textAlignVertical: 'top' }]}
+                style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border, minHeight: 200, textAlignVertical: 'top' }]}
                 placeholder="Contenido"
                 placeholderTextColor={theme.textTertiary}
                 value={content}
@@ -74,21 +73,14 @@ export default function EditNoteScreen() {
                 multiline
               />
             </FadeInDown>
-
-            <FadeInDown duration={300} offset={-20} delay={240}>
-              <Text onPress={save} style={[styles.saveBtn, { backgroundColor: theme.primary }]}>
-                Guardar cambios
-              </Text>
-            </FadeInDown>
           </ScrollView>
-        </Animated.View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        </KeyboardAvoidingView>
+      </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
   input: { padding: 14, borderRadius: 12, borderWidth: 1, marginBottom: 16 },
-  saveBtn: { padding: 16, borderRadius: 12, textAlign: 'center', color: '#fff', fontWeight: '600', fontSize: 16 },
 });

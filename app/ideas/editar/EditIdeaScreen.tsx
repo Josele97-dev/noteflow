@@ -1,7 +1,7 @@
 import { EditHeader } from '@/components/ui/EditHeader';
 import { useExitAnimation } from '@/hooks/useExitAnimation';
 import * as Haptics from 'expo-haptics';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -10,9 +10,10 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  View,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../constants/theme';
 import { useNotesStore } from '../../../store/notesStore';
 
@@ -33,7 +34,6 @@ export default function EditIdeaScreen() {
 
   const save = async () => {
     if (!title.trim()) return;
-
     const tagsArray = tags.split(',').map((t) => t.trim()).filter(Boolean);
     updateIdea(idea.id, { title, content, tags: tagsArray });
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -41,29 +41,30 @@ export default function EditIdeaScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={insets.top + 20}
-      >
-        <Animated.View style={[{ flex: 1 }, animStyle]}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Stack.Screen options={{ headerShown: false }} />
+
+      <Animated.View style={[{ flex: 1 }, animStyle]}>
+        <EditHeader title="Editar idea" onBack={router.back} onSave={save} />
+
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <ScrollView
-            contentContainerStyle={{ padding: 20, paddingTop: 10, paddingBottom: insets.bottom + 40 }}
+            contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 40 }}
             showsVerticalScrollIndicator={false}
           >
-            <EditHeader title="Editar idea" onBack={router.back} marginTop={insets.top} />
-
             <TextInput
-              style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border, fontSize: 20, fontWeight: '600' }]}
+              style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border, fontSize: 18, fontWeight: '600' }]}
               placeholder="Título"
-              placeholderTextColor={theme.textSecondary}
+              placeholderTextColor={theme.textTertiary}
               value={title}
               onChangeText={setTitle}
             />
 
             <TextInput
-              style={[styles.input, { color: theme.textSecondary, backgroundColor: theme.card, borderColor: theme.border, minHeight: 160, textAlignVertical: 'top' }]}
+              style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border, minHeight: 160, textAlignVertical: 'top' }]}
               placeholder="Contenido"
               placeholderTextColor={theme.textTertiary}
               value={content}
@@ -71,26 +72,23 @@ export default function EditIdeaScreen() {
               multiline
             />
 
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Tags</Text>
             <TextInput
               style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
-              placeholder="Tags separados por comas"
-              placeholderTextColor={theme.textSecondary}
+              placeholder="Tag1, Tag2, Tag3..."
+              placeholderTextColor={theme.textTertiary}
               value={tags}
               onChangeText={setTags}
             />
-
-            <Text onPress={save} style={[styles.saveBtn, { backgroundColor: theme.primary }]}>
-              Guardar cambios
-            </Text>
           </ScrollView>
-        </Animated.View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        </KeyboardAvoidingView>
+      </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
   input: { padding: 14, borderRadius: 12, borderWidth: 1, marginBottom: 16 },
-  saveBtn: { marginTop: 10, padding: 16, borderRadius: 12, textAlign: 'center', color: '#fff', fontWeight: '600', fontSize: 16 },
+  label: { fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 },
 });
