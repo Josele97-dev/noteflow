@@ -1,12 +1,12 @@
 # Teoría de React Native, Expo y decisiones técnicas en NoteFlow
 
-Este documento explica los fundamentos de React Native, cómo funciona Expo, qué problemas reales aparecieron durante el desarrollo de NoteFlow (incluyendo el parpadeo en transiciones) y por qué se tomaron decisiones técnicas específicas, como el uso de animaciones imperativas en lugar de animaciones declarativas.
+Este documento explica los fundamentos de React Native, cómo funciona Expo, qué problemas reales aparecieron durante el desarrollo de NoteFlow y por qué se tomaron decisiones técnicas específicas.
 
 ---
 
 # 1. Qué es React Native realmente
 
-React Native no renderiza HTML ni usa un WebView.  
+React Native no renderiza HTML ni usa un WebView.
 Cuando escribes:
 
 ```tsx
@@ -15,8 +15,7 @@ Cuando escribes:
 </View>
 ```
 
-React Native no dibuja HTML.
-En su lugar:
+React Native no dibuja HTML. En su lugar:
 
 - El JavaScript thread ejecuta tu lógica React.
 - El UI thread nativo crea vistas reales del sistema operativo (Android/iOS).
@@ -40,44 +39,47 @@ Expo Go es ideal para prototipar, pero tiene limitaciones:
 - No permite ciertas APIs avanzadas.
 - No permite añadir librerías nativas que no estén preinstaladas.
 
-En proyectos reales se usa un Development Build, que es un binario propio generado con EAS Build.
+En proyectos reales se usa un **Development Build**, que es un binario propio generado con EAS Build.
 
-NoteFlow funciona perfectamente en Expo Go porque:
+NoteFlow usa un Development Build porque:
 
-- No usa módulos nativos personalizados.
-- Todas las librerías son compatibles con Expo.
+- Usa `@react-native-firebase` que contiene código nativo.
+- Usa `expo-image-picker` que requiere permisos nativos.
+- Expo Go no soporta estos módulos.
+
+El build se genera con:
+```bash
+eas build --profile development --platform android
+```
 
 ---
 
 # 3. Metro Bundler
 
-Metro es el empaquetador de React Native.
-Su función es:
+Metro es el empaquetador de React Native. Su función es:
 
 - Resolver imports
 - Empaquetar el código JS/TS
 - Transformar JSX
 - Servir el bundle durante el desarrollo
 
-No es Webpack, no es Vite:
-es un bundler optimizado para React Native.
+No es Webpack, no es Vite — es un bundler optimizado para React Native.
 
 ---
 
 # 4. Navegación con Expo Router
 
-Expo Router usa el sistema de archivos para definir rutas.
-En NoteFlow se implementó:
+Expo Router usa el sistema de archivos para definir rutas. En NoteFlow se implementó:
 
 - Navegación por pestañas (Tabs)
-- Rutas dinámicas para detalle: [id].tsx
+- Rutas dinámicas para detalle: `[id].tsx`
 - Un modal para crear nuevas notas
+- Un grupo `(auth)` para las pantallas de login y registro
+- Protección de rutas con `onAuthStateChanged`
 
 Expo Router simplifica la navegación, pero tiene un comportamiento importante:
 
-👉 Cada vez que navegas a una pantalla, Expo Router hace un remount del componente.
-
-Esto es relevante para el siguiente punto: el parpadeo.
+Cada vez que navegas a una pantalla, Expo Router hace un remount del componente.
 
 ---
 
@@ -85,15 +87,11 @@ Esto es relevante para el siguiente punto: el parpadeo.
 
 FlashList soluciona problemas de rendimiento:
 
-- Reciclaje agresivo de vistas  
-- Mejor estimación de tamaño  
-- Menos re-renders  
+- Reciclaje agresivo de vistas
+- Mejor estimación de tamaño
+- Menos re-renders
 
-Se usa en:
-
-- Notas  
-- Ideas  
-- Checklists  
+Se usa en las tres pestañas principales: Notas, Ideas y Checklists.
 
 ---
 
@@ -101,42 +99,74 @@ Se usa en:
 
 Zustand se eligió porque:
 
-- No requiere providers anidados  
-- No provoca re-renders innecesarios  
-- Es más simple que Redux  
-- Funciona perfecto con persistencia  
+- No requiere providers anidados
+- No provoca re-renders innecesarios
+- Es más simple que Redux
+- Funciona perfectamente con llamadas asíncronas a la API
+
+En versiones anteriores usaba `persist` con AsyncStorage. Actualmente el estado se sincroniza con el backend en vez de persistir localmente.
 
 ---
 
-# 7. Persistencia con AsyncStorage
+# 7. Persistencia y sincronización con el backend
 
-Permite:
+NoteFlow pasó de persistencia local con AsyncStorage a sincronización con un backend real:
 
-- Guardar datos en el dispositivo  
-- Rehidratar el estado al abrir la app  
-- Mantener notas, ideas y tareas  
+- **Antes:** los datos se guardaban en el dispositivo con AsyncStorage
+- **Ahora:** los datos se guardan en PostgreSQL (Neon) a través de una API REST
 
----
+Esto permite:
 
-# 8. Sistema de diseño y modo oscuro
-
-- Paleta de colores propia  
-- Tipografía consistente  
-- Espaciados base  
-- useColorScheme para modo oscuro/claro  
+- Sincronización entre dispositivos
+- Datos seguros aunque se desinstale la app
+- Cada usuario ve solo sus propios datos
 
 ---
 
-# 9. Conclusión técnica
+# 8. Autenticación con Firebase Auth
+
+Firebase Auth gestiona la identidad del usuario:
+
+- Registro con email y contraseña
+- Inicio de sesión persistente
+- Token de identidad para autenticar peticiones al backend
+
+El backend usa Firebase Admin SDK para verificar los tokens y filtrar los datos por usuario.
+
+---
+
+# 9. Almacenamiento de imágenes con AWS S3
+
+Las imágenes de perfil se guardan en AWS S3:
+
+- La app pide al backend una Presigned URL
+- La app sube la imagen directamente a S3
+- La URL pública se guarda en Firestore
+- El componente `Image` renderiza la imagen desde la URL de S3
+
+---
+
+# 10. Sistema de diseño y modo oscuro
+
+- Paleta de colores propia en `constants/theme.ts`
+- Tipografía consistente
+- Espaciados base
+- `useColorScheme` para modo oscuro/claro
+
+---
+
+# 11. Conclusión técnica
 
 NoteFlow demuestra entendimiento de:
 
-- React Native  
-- Expo Router  
-- Reanimated  
-- FlashList  
-- Zustand  
-- Persistencia  
-- Arquitectura móvil  
+- React Native y arquitectura nativa
+- Expo Router y navegación por archivos
+- Reanimated para animaciones imperativas
+- FlashList para listas de alto rendimiento
+- Zustand para estado global
+- Firebase Auth para autenticación
+- API REST con Next.js y PostgreSQL
+- AWS S3 para almacenamiento de assets
+- Development Build con EAS
 
 Las decisiones técnicas fueron basadas en pruebas reales y búsqueda de rendimiento y fluidez.

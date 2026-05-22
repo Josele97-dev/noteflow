@@ -15,6 +15,7 @@ export default function IdeaCard({ idea, onPress }: Props) {
     getColoredItemStyles(idea.color, theme);
 
   const tags = Array.isArray(idea.tags) ? idea.tags : [];
+  const fecha = new Date(idea.createdAt).toLocaleDateString('es-ES');
 
   return (
     <TouchableOpacity
@@ -23,6 +24,7 @@ export default function IdeaCard({ idea, onPress }: Props) {
         { backgroundColor: idea.color || theme.card, borderColor: theme.border },
       ]}
       onPress={onPress}
+      activeOpacity={0.9}
     >
       <View style={styles.row}>
         <Ionicons
@@ -31,7 +33,9 @@ export default function IdeaCard({ idea, onPress }: Props) {
           color={iconColor}
           style={{ marginRight: 10 }}
         />
-        <Text style={[styles.title, { color: textColor }]}>{idea.title}</Text>
+        <Text style={[styles.title, { color: textColor }]} numberOfLines={1}>
+          {idea.title}
+        </Text>
       </View>
 
       {tags.length > 0 && (
@@ -43,6 +47,9 @@ export default function IdeaCard({ idea, onPress }: Props) {
           ))}
         </View>
       )}
+
+      {/* FECHA AÑADIDA */}
+      <Text style={[styles.date, { color: textSecondary }]}>{fecha}</Text>
     </TouchableOpacity>
   );
 }
@@ -59,9 +66,32 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  row: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  title: { fontSize: 16, fontWeight: '600', flexShrink: 1 },
-  tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  tag: { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
-  tagText: { fontSize: 12 },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    flexShrink: 1,
+  },
+  tags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 8,
+  },
+  tag: {
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  tagText: {
+    fontSize: 12,
+  },
+  date: {
+    fontSize: 12,
+    marginTop: 4,
+  },
 });

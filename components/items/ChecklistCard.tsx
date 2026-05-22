@@ -19,10 +19,15 @@ export default function ChecklistCard({ checklist, onPress }: Props) {
     <TouchableOpacity
       style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}
       onPress={onPress}
+      activeOpacity={0.9}
     >
       <View style={styles.header}>
-        <Feather name="check-circle" size={20} color={theme.primary} />
-        <Text style={[styles.title, { color: theme.text }]}>{checklist.title}</Text>
+        {/* ICONO NUEVO SIN TICK */}
+        <Feather name="list" size={20} color={theme.primary} />
+
+        <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
+          {checklist.title}
+        </Text>
       </View>
 
       <Text style={[styles.counter, { color: theme.textSecondary }]}>
@@ -30,10 +35,17 @@ export default function ChecklistCard({ checklist, onPress }: Props) {
       </Text>
 
       <View style={[styles.barraFondo, { backgroundColor: theme.border }]}>
-        <View style={[styles.barraRelleno, { width: `${progreso}%` as any, backgroundColor: theme.success }]} />
+        <View
+          style={[
+            styles.barraRelleno,
+            { width: `${progreso}%`, backgroundColor: theme.success },
+          ]}
+        />
       </View>
 
-      <Text style={[styles.date, { color: theme.textTertiary }]}>{fecha}</Text>
+      <Text style={[styles.date, { color: theme.textTertiary }]}>
+        {fecha}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -50,10 +62,32 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
-  title: { fontSize: 16, fontWeight: '600', flex: 1 },
-  counter: { fontSize: 13, marginBottom: 8 },
-  barraFondo: { height: 6, borderRadius: 3, marginBottom: 8 },
-  barraRelleno: { height: 6, borderRadius: 3 },
-  date: { fontSize: 12, marginTop: 4 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    flex: 1,
+  },
+  counter: {
+    fontSize: 13,
+    marginBottom: 8,
+  },
+  barraFondo: {
+    height: 6,
+    borderRadius: 3,
+    marginBottom: 8,
+  },
+  barraRelleno: {
+    height: 6,
+    borderRadius: 3,
+  },
+  date: {
+    fontSize: 12,
+    marginTop: 4,
+  },
 });

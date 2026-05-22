@@ -2,7 +2,7 @@
 
 ## Qué problema resuelve NoteFlow
 
-NoteFlow nace para resolver un problema muy concreto: la mayoría de apps de notas mezclan todo en un mismo sitio (notas largas, ideas rápidas, tareas, listas), lo que termina generando ruido, fricción y sensación de caos.  
+NoteFlow nace para resolver un problema muy concreto: la mayoría de apps de notas mezclan todo en un mismo sitio (notas largas, ideas rápidas, tareas, listas), lo que termina generando ruido, fricción y sensación de caos.
 
 El usuario acaba con decenas de notas sin clasificar, tareas perdidas entre texto y ninguna vista clara de qué es accionable y qué no.
 
@@ -30,56 +30,80 @@ Ejemplos de uso diario:
 
 La app está pensada para abrirla, hacer algo concreto en pocos segundos y cerrarla, sin fricción.
 
-## Funcionalidades principales de esta primera versión
+## Funcionalidades principales
 
-- Tres secciones principales:
+- **Tres secciones principales:**
   - **Notas:** listado de notas de texto con título, contenido y fecha.
   - **Tareas (checklists):** listas de tareas con items marcables y barra de progreso.
   - **Ideas:** notas rápidas con etiquetas y color de fondo.
 
-- Detalle de cada elemento:
+- **Detalle de cada elemento:**
   - Pantalla de detalle para Nota, Idea y Checklist.
-  - Posibilidad de eliminar desde el detalle con confirmación.
+  - Posibilidad de editar, archivar y eliminar desde el detalle con confirmación.
 
-- Creación de nuevo contenido:
+- **Creación de nuevo contenido:**
   - Pantalla `crear` que adapta el formulario según el tipo de nota.
   - Validación con Zod para evitar datos incompletos.
 
-- Estado global:
+- **Autenticación:**
+  - Registro e inicio de sesión con Firebase Auth.
+  - Sesión persistente — el usuario no tiene que volver a iniciar sesión.
+  - Cada usuario ve únicamente sus propios datos.
+
+- **Perfil de usuario:**
+  - Pantalla de perfil con nombre, email y foto.
+  - Foto de perfil seleccionable desde la galería y almacenada en AWS S3.
+
+- **Backend y persistencia en la nube:**
+  - API REST con Next.js desplegada en Vercel.
+  - Base de datos PostgreSQL en Neon.
+  - Los datos se sincronizan en tiempo real con el servidor.
+
+- **Archivado:**
+  - Posibilidad de archivar notas, ideas y tareas.
+  - Pestaña de archivados con buscador.
+
+- **Estado global:**
   - Gestión de notas, ideas y checklists con Zustand.
-  - Persistencia con AsyncStorage para que los datos se mantengan al cerrar la app.
+  - Las acciones llaman a la API REST en vez de guardar localmente.
 
-- Listas de alto rendimiento:
-  - Uso de FlashList en las tres pestañas para evitar problemas de rendimiento con muchas notas.
+- **Listas de alto rendimiento:**
+  - Uso de FlashList en las tres pestañas.
 
-- Tema visual:
+- **Tema visual:**
   - Soporte para modo claro y oscuro con un sistema de diseño propio.
 
-- UX:
-  - Feedback háptico al eliminar y al completar checklists.
+- **UX:**
+  - Feedback háptico al eliminar, archivar y completar checklists.
   - Estados vacíos cuando no hay contenido.
+  - Animaciones de entrada y salida en pantallas de detalle.
 
-## Funcionalidades opcionales para futuras versiones
+## Stack técnico
 
-- **Búsqueda global:** campo de búsqueda en cada pestaña que filtre en tiempo real.
-- **Archivado de notas:** en lugar de eliminar definitivamente, permitir archivar y tener una pestaña de “Archivadas”.
-- **Sincronización en la nube:** backup entre dispositivos.
-- **Recordatorios y notificaciones:** asociar fechas a notas o tareas.
-- **Etiquetas globales:** vista por etiquetas para ver todo lo relacionado con un tema.
-- **Filtros avanzados:** por fecha, tipo, estado de completado, etc.
-- **Modo enfoque:** vista simplificada para centrarse solo en una lista o nota.
+- **App móvil:** Expo SDK 55, React Native, TypeScript
+- **Navegación:** Expo Router
+- **Estado global:** Zustand
+- **Autenticación:** Firebase Auth + Firebase Admin SDK
+- **Base de datos de perfiles:** Firestore
+- **Backend:** Next.js desplegado en Vercel
+- **Base de datos:** PostgreSQL en Neon
+- **Almacenamiento de imágenes:** AWS S3
+- **Validación:** Zod
 
-## Repositorio y estructura inicial
+## Repositorio y estructura
 
-El proyecto se creó con:
+noteflow_55/
+app/           → rutas con Expo Router
+components/    → componentes reutilizables
+store/         → Zustand store
+lib/           → funciones de API
+types/         → tipos TypeScript
+constants/     → tema visual
+hooks/         → hooks personalizados
+docs/          → documentación
 
-- `npx create-expo-app@latest noteflow --template blank-typescript`
+## API Backend
 
-Estructura base:
+La API REST está desplegada en: https://noteflow-api.vercel.app/
 
-- `app/` – rutas con Expo Router (tabs, detalle, modal de nueva nota)
-- `components/` – componentes reutilizables (tarjetas, layouts, etc.)
-- `store/` – Zustand store para notas, ideas y checklists
-- `types/` – tipos TypeScript para las distintas notas
-- `constants/` – tema visual, colores, tipografía
-- `docs/` – documentación del proyecto
+Repositorio del backend: `noteflow-api`

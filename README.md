@@ -1,107 +1,124 @@
 # NoteFlow
 
-Gestor de notas moderno y minimalista construido con Expo, React Native,
-Zustand, FlashList y Expo Router.
-Diseñado para ser rápido, fluido y extremadamente claro, con animaciones
-suaves, edición completa y persistencia local.
+Gestor de notas moderno construido con Expo, React Native, Zustand, FlashList y Expo Router.
+Con autenticación Firebase, backend en Next.js, base de datos PostgreSQL y almacenamiento de imágenes en AWS S3.
 
-------------------------------------------------------------------------
+---
 
 ## Descripción
 
 NoteFlow organiza la información en tres tipos de contenido:
 
--   Notas --- texto libre
--   Checklists --- listas de tareas
--   Ideas --- notas rápidas con etiquetas, color y descripción
+- **Notas** — texto libre
+- **Checklists** — listas de tareas
+- **Ideas** — notas rápidas con etiquetas, color y descripción
 
-Cada tipo tiene su propia vista, su propio detalle, su flujo de edición
-y su sistema de archivado.
+Cada tipo tiene su propia vista, detalle, flujo de edición y sistema de archivado. Los datos se sincronizan con un backend real y cada usuario ve únicamente sus propios datos.
 
-------------------------------------------------------------------------
+---
 
 ## Características principales
+
+### Autenticación
+- Registro e inicio de sesión con Firebase Auth
+- Sesión persistente
+- Perfil de usuario con nombre, email y foto
+- Foto de perfil desde la galería, almacenada en AWS S3
 
 ### Tipos de contenido
 
 #### Notas
-
--   Título, contenido y fecha
--   Vista de detalle
--   Edición completa
--   Eliminación con confirmación
--   Archivado
--   Feedback háptico
+- Título, contenido y fecha
+- Vista de detalle
+- Edición completa
+- Eliminación con confirmación
+- Archivado
+- Feedback háptico
 
 #### Checklists
-
--   Items marcables
--   Barra de progreso
--   Edición de listas e items
--   Archivado
--   Vibración al completar tareas
+- Items marcables
+- Barra de progreso
+- Edición de listas e items
+- Archivado
+- Vibración al completar tareas
 
 #### Ideas
+- Etiquetas dinámicas
+- Color personalizado
+- Edición completa
+- Archivado
+- Organización visual rápida
 
--   Etiquetas dinámicas
--   Color personalizado
--   Edición completa
--   Archivado
--   Organización visual rápida
+---
 
-------------------------------------------------------------------------
+## Backend
+
+La app consume una API REST propia desplegada en Vercel: https://noteflow-api.vercel.app/
+
+- **Base de datos:** PostgreSQL en Neon
+- **Autenticación:** Firebase Admin SDK
+- **Almacenamiento:** AWS S3 para imágenes
+- **Repositorio:** `noteflow-api`
+
+---
 
 ## Rendimiento
 
--   FlashList en todas las pantallas
--   Optimización para +50 elementos sin pérdida de FPS
--   Re-render controlado
--   Búsqueda en tiempo real sin bloqueos
+- FlashList en todas las pantallas
+- Optimización para +50 elementos sin pérdida de FPS
+- Re-render controlado
+- Búsqueda en tiempo real sin bloqueos
 
-------------------------------------------------------------------------
+---
 
 ## UI / UX
 
--   Tema claro y oscuro automático
--   Sistema de tokens en constants/theme.ts
--   Animaciones declarativas suaves (FadeInDown)
--   Interacciones con feedback háptico
--   Estados vacíos personalizados
--   Diseño limpio y minimalista
+- Tema claro y oscuro automático
+- Sistema de tokens en `constants/theme.ts`
+- Animaciones suaves con Reanimated
+- Interacciones con feedback háptico
+- Estados vacíos personalizados
+- Diseño limpio y minimalista
 
-------------------------------------------------------------------------
+---
 
 ## Estado global
 
--   Zustand como store principal
--   Persistencia con AsyncStorage
--   Rehidratación automática
--   Stores unificados para notas, ideas y checklists
+- Zustand como store principal
+- Las acciones sincronizan con la API REST
+- Cada acción (crear, editar, eliminar) actualiza el estado local y el servidor
 
-------------------------------------------------------------------------
+---
 
 ## Navegación
 
--   Expo Router
--   Tabs como navegación principal
--   Rutas dinámicas \[id\].tsx
--   Modal para creación de nuevas notas
+- Expo Router
+- Tabs como navegación principal
+- Grupo `(auth)` para login y registro
+- Rutas dinámicas `[id].tsx`
+- Modal para creación de nuevas notas
+- Protección de rutas con Firebase Auth
 
-------------------------------------------------------------------------
+---
 
 ## Estructura del proyecto
 
 ```bash
 app/
+  (auth)/
+    _layout.tsx
+    login.tsx
+    register.tsx
+
   (tabs)/
     _layout.tsx
     notas.tsx
     ideas.tsx
     checklists.tsx
     archivados.tsx
+    perfil.tsx
 
   notas/
-    _layout.tsx
     [id].tsx
     editar/
       EditNoteScreen.tsx
@@ -116,14 +133,16 @@ app/
     editar/
       EditTaskScreen.tsx
 
-   crear.tsx
-   _layout.tsx
+  crear.tsx
+  _layout.tsx
+  index.tsx
 
 components/
   animations/
     FadeInDown.tsx
+    FadeOutLeft.tsx
   archived/
-    ArchivedCard.tsx
+    ArchivedSection.tsx
   items/
     NoteCard.tsx
     IdeaCard.tsx
@@ -144,68 +163,60 @@ docs/
   react-native-teoria.md
 
 hooks/
-  use-color-scheme.ts
-  use-color-scheme.web.ts
-  use-theme-color.ts
   useExitAnimation.ts
+
+lib/
+  api.ts
 
 store/
   notesStore.ts
+
+utils/
+  ideaColors.ts
 ```
 
-------------------------------------------------------------------------
+---
 
 ## Documentación
 
--   idea.md → concepto del proyecto
--   project-management.md → organización en Trello
--   react-native-teoria.md → teoría de RN, Expo y rendimiento
--   ai-setup.md → herramientas de IA usadas
+- `idea.md` → concepto del proyecto
+- `project-management.md` → organización en Trello
+- `react-native-teoria.md` → teoría de RN, Expo y rendimiento
+- `ai-setup.md` → herramientas de IA usadas
 
-------------------------------------------------------------------------
+---
 
 ## Tablero de Trello
 
 https://trello.com/b/I1L4Exy8/noteflow
 
-------------------------------------------------------------------------
-
-## Animaciones
-
-Se utilizan animaciones declarativas suaves con Reanimated:
-
--   FadeInDown
--   Delays progresivos
--   Transiciones limpias en pantallas de detalle
-
-### Beneficios:
-
--   Entrada fluida del contenido
--   Código simple y mantenible
--   Compatible con FlashList
--   Sin sobrecarga en pantallas de detalle
-
-------------------------------------------------------------------------
+---
 
 ## Tecnologías
 
--   Expo SDK 55
--   React Native 0.76
--   Expo Router
--   Zustand + persist
--   AsyncStorage
--   FlashList
--   Reanimated 3
--   Expo Haptics
--   TypeScript
+- Expo SDK 55
+- React Native 0.76
+- Expo Router
+- Zustand
+- Firebase Auth + Firestore
+- Firebase Admin SDK
+- FlashList
+- Reanimated 3
+- Expo Haptics
+- Expo Image Picker
+- AWS S3
+- TypeScript
 
-------------------------------------------------------------------------
+---
 
 ## Instalación
 
-``` bash
+```bash
 git clone https://github.com/TU_ENLACE/noteflow.git
 cd noteflow
 npm install
 npx expo start
 ```
+
+> La app requiere un Development Build — no funciona con Expo Go.
+> Genera el build con `eas build --profile development --platform android`

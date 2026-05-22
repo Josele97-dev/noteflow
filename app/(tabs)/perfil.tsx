@@ -61,7 +61,6 @@ export default function PerfilScreen() {
         const fileName = uri.split('/').pop() ?? 'avatar.jpg';
         const fileType = 'image/jpeg';
 
-        // 1. Obtener URL firmada del backend
         const token = await user!.getIdToken();
         const res = await fetch(`${API_URL}/upload`, {
           method: 'POST',
@@ -73,18 +72,15 @@ export default function PerfilScreen() {
         });
         const { signedUrl, publicUrl } = await res.json();
 
-        // 2. Convertir URI a Blob
         const imageRes = await fetch(uri);
         const blob = await imageRes.blob();
 
-        // 3. Subir a S3
         await fetch(signedUrl, {
           method: 'PUT',
           body: blob,
           headers: { 'Content-Type': fileType },
         });
 
-        // 4. Guardar URL en Firestore
         await firestore().collection('users').doc(user!.uid).update({
           avatarUrl: publicUrl,
         });
@@ -106,23 +102,32 @@ export default function PerfilScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background, paddingTop: insets.top + 40 }]}>
-      <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
 
-        <TouchableOpacity onPress={pickImage} disabled={uploading}>
-          {profile?.avatarUrl ? (
-            <Image source={{ uri: profile.avatarUrl }} style={styles.avatar} />
-          ) : (
-            <View style={[styles.avatar, { backgroundColor: theme.primary + '33', justifyContent: 'center', alignItems: 'center' }]}>
-              <Text style={styles.avatarText}>
-                {profile?.name?.charAt(0).toUpperCase() ?? user?.email?.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
-          <Text style={[styles.changePhoto, { color: uploading ? theme.textTertiary : theme.primary }]}>
-            {uploading ? 'Subiendo...' : 'Cambiar foto'}
-          </Text>
+      <View style={[styles.avatarBlock, { backgroundColor: theme.card, borderColor: theme.border }]}>
+        <TouchableOpacity onPress={pickImage} disabled={uploading} style={styles.avatarWrapper}>
+          
+          <View style={[styles.avatarBorder, { borderColor: theme.primary }]}>
+            {profile?.avatarUrl ? (
+              <Image source={{ uri: profile.avatarUrl }} style={styles.avatar} />
+            ) : (
+              <View style={[styles.avatar, { backgroundColor: theme.primary + '55', justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={styles.avatarText}>
+                  {profile?.name?.charAt(0).toUpperCase() ?? user?.email?.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <View style={[styles.changePhotoBtn, { backgroundColor: theme.primary + '15' }]}>
+            <Text style={[styles.changePhotoText, { color: theme.primary }]}>
+              {uploading ? 'Subiendo...' : 'Cambiar foto'}
+            </Text>
+          </View>
+
         </TouchableOpacity>
+      </View>
 
+      <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
         <Text style={[styles.name, { color: theme.text }]}>
           {profile?.name ?? 'Sin nombre'}
         </Text>
@@ -139,56 +144,91 @@ export default function PerfilScreen() {
           <Text style={styles.btnText}>Cerrar sesión</Text>
         </TouchableOpacity>
       </View>
+
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 24 },
-  card: {
+
+  avatarBlock: {
+    width: '100%',
     borderWidth: 1,
-    borderRadius: 26,
-    padding: 26,
+    borderRadius: 32,
+    paddingVertical: 40,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: 30,
+  },
+
+  avatarWrapper: {
+    alignItems: 'center',
     width: '100%',
   },
-  avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    marginBottom: 8,
+
+  avatarBorder: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    borderWidth: 5,
+    padding: 6,
+    marginBottom: 18,
   },
+
+  avatar: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 75,
+  },
+
   avatarText: {
-    fontSize: 38,
+    fontSize: 52,
     fontWeight: '800',
     color: '#fff',
   },
-  changePhoto: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 16,
+
+  changePhotoBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    borderRadius: 14,
   },
-  name: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  email: {
+
+  changePhotoText: {
     fontSize: 16,
-    marginBottom: 26,
+    fontWeight: '600',
   },
+
+  card: {
+    borderWidth: 1,
+    borderRadius: 28,
+    padding: 28,
+    alignItems: 'center',
+    width: '100%',
+  },
+
+  name: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+
+  email: {
+    fontSize: 17,
+    marginBottom: 30,
+  },
+
   btn: {
-    height: 56,
-    borderRadius: 16,
+    height: 58,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    marginTop: 10,
   },
+
   btnText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
   },
 });
