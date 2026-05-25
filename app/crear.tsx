@@ -48,8 +48,6 @@ export default function NuevaNota() {
 
   const inputStyle = [styles.input, { backgroundColor: theme.card, borderColor: theme.border, color: theme.text }];
 
-  // Claro: fondo azul primario, texto blanco
-  // Oscuro: fondo card (#1e1e1e), texto normal
   const headerBg = isDark ? theme.card : theme.primary;
   const headerTextColor = isDark ? theme.text : '#ffffff';
   const saveBtnBg = isDark ? theme.primary : 'rgba(255,255,255,0.2)';

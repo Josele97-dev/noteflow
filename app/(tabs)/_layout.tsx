@@ -59,8 +59,6 @@ export default function TabsLayout() {
     return unsub;
   }, []);
 
-  // En modo claro: header azul primario, texto e iconos blancos
-  // En modo oscuro: comportamiento original
   const headerBg = isDark ? card : primary;
   const headerTextColor = isDark ? text : '#ffffff';
   const avatarBg = isDark ? primary + '22' : 'rgba(255,255,255,0.2)';
@@ -74,7 +72,6 @@ export default function TabsLayout() {
           headerTitleStyle: { color: headerTextColor },
           headerTintColor: headerTextColor,
 
-          // Tab bar: blanco en claro, card en oscuro
           tabBarStyle: {
             backgroundColor: isDark ? card : '#ffffff',
             borderTopColor: isDark ? border : 'rgba(10,77,156,0.12)',

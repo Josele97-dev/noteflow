@@ -30,7 +30,6 @@ export default function LoginScreen() {
     }
   };
 
-  // 🔥 Tipado completo para evitar errores
   const Input = ({
     icon,
     placeholder,

@@ -92,7 +92,7 @@ export default function ArchivadosScreen() {
       data: mapItems(notes, n => ({
         id: n.id,
         title: n.title,
-        subtitle: n.content ?? '',   // ← SEGURO
+        subtitle: n.content ?? '',   
         icon: 'file-text',
         type: 'nota',
       })),
@@ -100,7 +100,7 @@ export default function ArchivadosScreen() {
     {
       title: 'TAREAS',
       data: mapItems(checklists, c => {
-        const items = c.items ?? []; // ← SEGURO
+        const items = c.items ?? []; 
         const completed = items.filter(i => i?.isCompleted).length;
         return {
           id: c.id,
@@ -116,7 +116,7 @@ export default function ArchivadosScreen() {
       data: mapItems(ideas, i => ({
         id: i.id,
         title: i.title,
-        subtitle: (i.tags ?? []).join(', '), // ← SEGURO
+        subtitle: (i.tags ?? []).join(', '), 
         icon: 'zap',
         color: i.color,
         type: 'idea',

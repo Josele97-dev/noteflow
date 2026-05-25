@@ -22,7 +22,6 @@ export default function ChecklistCard({ checklist, onPress }: Props) {
       activeOpacity={0.9}
     >
       <View style={styles.header}>
-        {/* ICONO NUEVO SIN TICK */}
         <Feather name="list" size={20} color={theme.primary} />
 
         <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>

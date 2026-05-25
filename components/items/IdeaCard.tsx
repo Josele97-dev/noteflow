@@ -48,7 +48,6 @@ export default function IdeaCard({ idea, onPress }: Props) {
         </View>
       )}
 
-      {/* FECHA AÑADIDA */}
       <Text style={[styles.date, { color: textSecondary }]}>{fecha}</Text>
     </TouchableOpacity>
   );

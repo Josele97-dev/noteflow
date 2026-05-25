@@ -27,14 +27,12 @@ export function EditHeader({ title, onBack, onSave, saveLabel = 'Guardar' }: Pro
       <View
         style={{
           backgroundColor: headerBg,
-          // insets.top cubre exactamente la status bar en cualquier Android
           paddingTop: insets.top + 8,
           paddingBottom: 14,
           paddingHorizontal: 16,
           flexDirection: 'row',
           alignItems: 'center',
           gap: 12,
-          // Asegura que ocupe el ancho completo sin márgenes
           alignSelf: 'stretch',
         }}
       >

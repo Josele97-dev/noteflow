@@ -53,7 +53,6 @@ export default function RootLayout() {
 
   return (
     <>
-      {/* translucent global: el header de cada screen controla su propio color */}
       <StatusBar style={isDark ? 'light' : 'light'} translucent backgroundColor="transparent" />
 
       <Stack

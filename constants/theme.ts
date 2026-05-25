@@ -3,9 +3,9 @@ import { useColorScheme } from 'react-native';
 export const colors = {
   light: {
     primary: '#0A4D9C',
-    primarySubtle: '#EBF1FB',      // azul-50: para tags, pills, fondos secundarios
-    primaryMuted: 'rgba(10,77,156,0.12)', // para bordes con tinte azul
-    background: '#EBF1FB',         // fondo general con tinte azul suave
+    primarySubtle: '#EBF1FB',      
+    primaryMuted: 'rgba(10,77,156,0.12)', 
+    background: '#EBF1FB',         
     card: '#ffffff',
     text: '#1a1a1a',
     textSecondary: '#666666',
