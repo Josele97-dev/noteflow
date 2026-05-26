@@ -2,7 +2,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../constants/theme';
 import { IdeaNote } from '../../types';
-import { getColoredItemStyles } from '../../utils/ideaColors';
+
+function getReadableTextColor(bgColor: string) {
+  if (!bgColor) return '#000';
+
+  const c = bgColor.replace('#', '');
+  const rgb = parseInt(c, 16);
+  const r = (rgb >> 16) & 0xff;
+  const g = (rgb >> 8) & 0xff;
+  const b = rgb & 0xff;
+
+  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+
+  return luminance > 160 ? '#000' : '#fff';
+}
 
 interface Props {
   idea: IdeaNote;
@@ -11,8 +24,16 @@ interface Props {
 
 export default function IdeaCard({ idea, onPress }: Props) {
   const theme = useTheme();
-  const { textColor, textSecondary, iconColor, btnColor } =
-    getColoredItemStyles(idea.color, theme);
+
+  const bg = idea.color || theme.card;
+  const readable = getReadableTextColor(bg);
+
+  const textColor = readable;
+  const textSecondary =
+    readable === '#000' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)';
+  const iconColor = readable;
+  const btnColor =
+    readable === '#000' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.15)';
 
   const tags = Array.isArray(idea.tags) ? idea.tags : [];
   const fecha = new Date(idea.createdAt).toLocaleDateString('es-ES');
@@ -21,7 +42,7 @@ export default function IdeaCard({ idea, onPress }: Props) {
     <TouchableOpacity
       style={[
         styles.card,
-        { backgroundColor: idea.color || theme.card, borderColor: theme.border },
+        { backgroundColor: bg, borderColor: theme.border },
       ]}
       onPress={onPress}
       activeOpacity={0.9}
@@ -42,7 +63,9 @@ export default function IdeaCard({ idea, onPress }: Props) {
         <View style={styles.tags}>
           {tags.map((tag, index) => (
             <View key={index} style={[styles.tag, { backgroundColor: btnColor }]}>
-              <Text style={[styles.tagText, { color: textSecondary }]}>#{tag}</Text>
+              <Text style={[styles.tagText, { color: textSecondary }]}>
+                #{tag}
+              </Text>
             </View>
           ))}
         </View>

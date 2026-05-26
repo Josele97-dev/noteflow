@@ -4,12 +4,19 @@ export interface ChecklistItem {
   isCompleted: boolean;
 }
 
+export interface NoteLocation {
+  latitude: number;
+  longitude: number;
+  address: string;
+}
+
 export interface BaseNote {
   id: string;
   title: string;
   createdAt: Date;
   updatedAt: Date;
   archived: boolean;
+  location?: NoteLocation;
 }
 
 export interface Note extends BaseNote {

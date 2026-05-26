@@ -15,7 +15,19 @@ import {
 import { FadeOutLeft } from '../../components/animations/FadeOutLeft';
 import { useTheme } from '../../constants/theme';
 import { useNotesStore } from '../../store/notesStore';
-import { getColoredItemStyles } from '../../utils/ideaColors';
+
+function isColorLight(hex?: string) {
+  if (!hex) return true;
+
+  const c = hex.replace('#', '');
+  const rgb = parseInt(c, 16);
+  const r = (rgb >> 16) & 255;
+  const g = (rgb >> 8) & 255;
+  const b = rgb & 255;
+
+  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+  return luminance > 160;
+}
 
 type ItemType = 'nota' | 'tarea' | 'idea';
 
@@ -92,7 +104,7 @@ export default function ArchivadosScreen() {
       data: mapItems(notes, n => ({
         id: n.id,
         title: n.title,
-        subtitle: n.content ?? '',   
+        subtitle: n.content ?? '',
         icon: 'file-text',
         type: 'nota',
       })),
@@ -100,7 +112,7 @@ export default function ArchivadosScreen() {
     {
       title: 'TAREAS',
       data: mapItems(checklists, c => {
-        const items = c.items ?? []; 
+        const items = c.items ?? [];
         const completed = items.filter(i => i?.isCompleted).length;
         return {
           id: c.id,
@@ -116,7 +128,7 @@ export default function ArchivadosScreen() {
       data: mapItems(ideas, i => ({
         id: i.id,
         title: i.title,
-        subtitle: (i.tags ?? []).join(', '), 
+        subtitle: (i.tags ?? []).join(', '),
         icon: 'zap',
         color: i.color,
         type: 'idea',
@@ -162,7 +174,16 @@ export default function ArchivadosScreen() {
   };
 
   const renderCard = (item: ArchivedItem) => {
-    const s = getColoredItemStyles(item.color, theme);
+    const light = isColorLight(item.color || theme.card);
+
+    const s = {
+      textColor: light ? '#000' : '#fff',
+      textSecondary: light ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)',
+      iconColor: light ? '#000' : '#fff',
+      btnColor: light ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.15)',
+      dangerBtnColor: light ? 'rgba(255,0,0,0.15)' : 'rgba(255,255,255,0.15)',
+      dangerIconColor: light ? '#900' : '#fff',
+    };
 
     return (
       <View style={[styles.card, { backgroundColor: item.color || theme.card }]}>
@@ -179,10 +200,7 @@ export default function ArchivadosScreen() {
           </Text>
 
           {!!item.subtitle && (
-            <Text
-              numberOfLines={1}
-              style={[styles.cardSub, { color: s.textSecondary }]}
-            >
+            <Text numberOfLines={1} style={[styles.cardSub, { color: s.textSecondary }]}>
               {item.subtitle}
             </Text>
           )}
@@ -195,27 +213,14 @@ export default function ArchivadosScreen() {
             activarSalida(item.id);
           }}
         >
-          <Feather
-            name="corner-up-left"
-            size={16}
-            color={s.iconColor}
-          />
+          <Feather name="corner-up-left" size={16} color={s.iconColor} />
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.accionBtn,
-            { backgroundColor: s.dangerBtnColor, marginLeft: 8 },
-          ]}
-          onPress={() =>
-            confirmarEliminar(item.id, item.title)
-          }
+          style={[styles.accionBtn, { backgroundColor: s.dangerBtnColor, marginLeft: 8 }]}
+          onPress={() => confirmarEliminar(item.id, item.title)}
         >
-          <Feather
-            name="trash-2"
-            size={16}
-            color={s.dangerIconColor}
-          />
+          <Feather name="trash-2" size={16} color={s.dangerIconColor} />
         </TouchableOpacity>
       </View>
     );
@@ -236,11 +241,7 @@ export default function ArchivadosScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.search, { backgroundColor: theme.card }]}>
-        <Feather
-          name="search"
-          size={18}
-          color={theme.textSecondary}
-        />
+        <Feather name="search" size={18} color={theme.textSecondary} />
 
         <TextInput
           value={busqueda}

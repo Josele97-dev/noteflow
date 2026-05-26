@@ -2,8 +2,8 @@ import { FadeInDown } from '@/components/animations/FadeInDown';
 import { ItemActions } from '@/components/items/ItemActions';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../constants/theme';
 import { useNotesStore } from '../../store/notesStore';
 
@@ -13,10 +13,7 @@ export default function NotaDetalle() {
   const theme = useTheme();
   const { notes, deleteNote, archiveNote } = useNotesStore();
 
-  const nota = notes.find((n) => n.id === id);
-  const notaRef = useRef(nota);
-  if (nota) notaRef.current = nota;
-  const data = notaRef.current;
+  const data = notes.find((n) => n.id === id);
 
   const [isOpening, setIsOpening] = useState(false);
 
@@ -31,11 +28,7 @@ export default function NotaDetalle() {
   function confirmar(titulo: string, mensaje: string, accion: () => void) {
     Alert.alert(titulo, mensaje, [
       { text: 'Cancelar', style: 'cancel' },
-      {
-        text: titulo,
-        style: titulo === 'Eliminar' ? 'destructive' : 'default',
-        onPress: accion,
-      },
+      { text: titulo, style: titulo === 'Eliminar' ? 'destructive' : 'default', onPress: accion },
     ]);
   }
 
@@ -79,6 +72,23 @@ export default function NotaDetalle() {
           <View style={[styles.separador, { backgroundColor: theme.border }]} />
           <Text style={[styles.content, { color: theme.textSecondary }]}>{data.content}</Text>
         </FadeInDown>
+
+        {data.location && (
+          <FadeInDown duration={400} offset={-30} delay={300}>
+            <TouchableOpacity
+              style={[
+                styles.locationRow,
+                { backgroundColor: theme.card, borderColor: theme.border },
+              ]}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.locationIcon}>📍</Text>
+              <Text style={[styles.locationText, { color: theme.textSecondary }]}>
+                {data.location.address}
+              </Text>
+            </TouchableOpacity>
+          </FadeInDown>
+        )}
       </ScrollView>
 
       <FadeInDown duration={400} offset={-30} delay={300}>
@@ -97,18 +107,19 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
   scrollContent: { padding: 24, paddingBottom: 40 },
-  fecha: {
-    fontSize: 13,
-    marginBottom: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 16,
-    lineHeight: 34,
-  },
+  fecha: { fontSize: 13, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
+  title: { fontSize: 28, fontWeight: '700', marginBottom: 16, lineHeight: 34 },
   separador: { height: 1, marginBottom: 20 },
   content: { fontSize: 16, lineHeight: 26 },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 24,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  locationIcon: { fontSize: 16 },
+  locationText: { fontSize: 13, flex: 1 },
 });
