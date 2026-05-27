@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
+
 import {
   StyleSheet,
   Text,
@@ -10,9 +11,9 @@ import {
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 import Animated, {
+  Easing,
   FadeInDown,
   FadeOutLeft,
-  runOnJS,
 } from 'react-native-reanimated';
 
 import { useTheme } from '../../constants/theme';
@@ -33,7 +34,8 @@ export default function NoteCard({
 }: Props) {
   const theme = useTheme();
 
-  const [removing, setRemoving] = useState(false);
+  const [removing, setRemoving] =
+    useState(false);
 
   const fecha = new Date(
     note.createdAt
@@ -44,7 +46,7 @@ export default function NoteCard({
 
     const timeout = setTimeout(() => {
       onDelete?.();
-    }, 120);
+    }, 200);
 
     return () => clearTimeout(timeout);
   }, [removing]);
@@ -68,107 +70,121 @@ export default function NoteCard({
     );
   };
 
-  const content = (
-    <Swipeable
-      friction={0.7}
-      rightThreshold={10}
-      overshootRight={false}
-      dragOffsetFromRightEdge={1}
-      renderRightActions={renderRightActions}
-      onSwipeableWillOpen={() => {
-        runOnJS(setRemoving)(true);
-      }}
+  return (
+    <Animated.View
+      entering={FadeInDown.delay(
+        index * 40
+      ).springify()}
+      exiting={FadeOutLeft.duration(200).easing(
+        Easing.out(Easing.cubic)
+      )}
+      style={[
+        removing && {
+          opacity: 0.95,
+        },
+      ]}
     >
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={onPress}
-        style={[
-          styles.card,
-          {
-            backgroundColor: theme.card,
-            borderColor: theme.border,
-          },
-        ]}
+      <Swipeable
+        enabled={!removing}
+        friction={1.7}
+        rightThreshold={28}
+        overshootRight={false}
+        dragOffsetFromRightEdge={1}
+        renderRightActions={
+          renderRightActions
+        }
+        onSwipeableWillOpen={() => {
+          setRemoving(true);
+        }}
       >
-        <View style={styles.row}>
-          <Ionicons
-            name="document-text-outline"
-            size={22}
-            color={theme.primary}
-            style={styles.noteIcon}
-          />
+        <TouchableOpacity
+          activeOpacity={0.85}
+          disabled={removing}
+          onPress={onPress}
+          style={[
+            styles.card,
+            {
+              backgroundColor:
+                theme.card,
+              borderColor:
+                theme.border,
+            },
+          ]}
+        >
+          <View style={styles.row}>
+            <Ionicons
+              name="document-text-outline"
+              size={22}
+              color={theme.primary}
+              style={styles.noteIcon}
+            />
 
-          <View style={styles.contentContainer}>
-            <Text
-              numberOfLines={1}
-              style={[
-                styles.title,
-                { color: theme.text },
-              ]}
+            <View
+              style={
+                styles.contentContainer
+              }
             >
-              {note.title}
-            </Text>
-
-            <Text
-              numberOfLines={2}
-              style={[
-                styles.content,
-                {
-                  color: theme.textSecondary,
-                },
-              ]}
-            >
-              {note.content}
-            </Text>
-
-            <View style={styles.footer}>
               <Text
+                numberOfLines={1}
                 style={[
-                  styles.date,
+                  styles.title,
                   {
-                    color: theme.textTertiary,
+                    color: theme.text,
                   },
                 ]}
               >
-                {fecha}
+                {note.title}
               </Text>
 
-              {note.location && (
+              <Text
+                numberOfLines={2}
+                style={[
+                  styles.content,
+                  {
+                    color:
+                      theme.textSecondary,
+                  },
+                ]}
+              >
+                {note.content}
+              </Text>
+
+              <View style={styles.footer}>
                 <Text
-                  numberOfLines={1}
                   style={[
-                    styles.location,
+                    styles.date,
                     {
                       color:
                         theme.textTertiary,
                     },
                   ]}
                 >
-                  📍 {note.location.address}
+                  {fecha}
                 </Text>
-              )}
+
+                {note.location && (
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.location,
+                      {
+                        color:
+                          theme.textTertiary,
+                      },
+                    ]}
+                  >
+                    📍{' '}
+                    {
+                      note.location
+                        .address
+                    }
+                  </Text>
+                )}
+              </View>
             </View>
           </View>
-        </View>
-      </TouchableOpacity>
-    </Swipeable>
-  );
-
-  if (removing) {
-    return (
-      <Animated.View
-        exiting={FadeOutLeft.duration(120)}
-      >
-        {content}
-      </Animated.View>
-    );
-  }
-
-  return (
-    <Animated.View
-      entering={FadeInDown.delay(index * 40).springify()}
-    >
-      {content}
+        </TouchableOpacity>
+      </Swipeable>
     </Animated.View>
   );
 }

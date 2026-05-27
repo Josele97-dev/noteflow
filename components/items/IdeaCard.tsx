@@ -11,9 +11,9 @@ import {
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 import Animated, {
+  Easing,
   FadeInDown,
   FadeOutLeft,
-  runOnJS,
 } from 'react-native-reanimated';
 
 import { useTheme } from '../../constants/theme';
@@ -88,7 +88,7 @@ export default function IdeaCard({
 
     const timeout = setTimeout(() => {
       onDelete?.();
-    }, 120);
+    }, 200);
 
     return () => clearTimeout(timeout);
   }, [removing]);
@@ -112,111 +112,105 @@ export default function IdeaCard({
     );
   };
 
-  const content = (
-    <Swipeable
-      friction={0.7}
-      rightThreshold={10}
-      overshootRight={false}
-      dragOffsetFromRightEdge={1}
-      renderRightActions={
-        renderRightActions
-      }
-      onSwipeableWillOpen={() => {
-        runOnJS(setRemoving)(true);
-      }}
-    >
-      <TouchableOpacity
-        style={[
-          styles.card,
-          {
-            backgroundColor: bg,
-            borderColor: theme.border,
-          },
-        ]}
-        onPress={onPress}
-        activeOpacity={0.9}
-      >
-        <View style={styles.row}>
-          <Ionicons
-            name="bulb-outline"
-            size={22}
-            color={iconColor}
-            style={{
-              marginRight: 10,
-            }}
-          />
-
-          <Text
-            style={[
-              styles.title,
-              { color: textColor },
-            ]}
-            numberOfLines={1}
-          >
-            {idea.title}
-          </Text>
-        </View>
-
-        {tags.length > 0 && (
-          <View style={styles.tags}>
-            {tags.map((tag, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.tag,
-                  {
-                    backgroundColor:
-                      btnColor,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.tagText,
-                    {
-                      color:
-                        textSecondary,
-                    },
-                  ]}
-                >
-                  #{tag}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        <Text
-          style={[
-            styles.date,
-            { color: textSecondary },
-          ]}
-        >
-          {fecha}
-        </Text>
-      </TouchableOpacity>
-    </Swipeable>
-  );
-
-  if (removing) {
-    return (
-      <Animated.View
-        exiting={FadeOutLeft.duration(
-          120
-        )}
-      >
-        {content}
-      </Animated.View>
-    );
-  }
-
   return (
     <Animated.View
       entering={FadeInDown.delay(
         index * 40
       ).springify()}
+      exiting={FadeOutLeft.duration(200).easing(
+        Easing.out(Easing.cubic)
+      )}
+      style={[
+        removing && {
+          opacity: 0.95,
+        },
+      ]}
     >
-      {content}
+      <Swipeable
+        enabled={!removing}
+        friction={1.7}
+        rightThreshold={28}
+        overshootRight={false}
+        dragOffsetFromRightEdge={1}
+        renderRightActions={
+          renderRightActions
+        }
+        onSwipeableWillOpen={() => {
+          setRemoving(true);
+        }}
+      >
+        <TouchableOpacity
+          style={[
+            styles.card,
+            {
+              backgroundColor: bg,
+              borderColor: theme.border,
+            },
+          ]}
+          onPress={onPress}
+          activeOpacity={0.9}
+          disabled={removing}
+        >
+          <View style={styles.row}>
+            <Ionicons
+              name="bulb-outline"
+              size={22}
+              color={iconColor}
+              style={{
+                marginRight: 10,
+              }}
+            />
+
+            <Text
+              style={[
+                styles.title,
+                { color: textColor },
+              ]}
+              numberOfLines={1}
+            >
+              {idea.title}
+            </Text>
+          </View>
+
+          {tags.length > 0 && (
+            <View style={styles.tags}>
+              {tags.map((tag, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.tag,
+                    {
+                      backgroundColor:
+                        btnColor,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.tagText,
+                      {
+                        color:
+                          textSecondary,
+                      },
+                    ]}
+                  >
+                    #{tag}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          <Text
+            style={[
+              styles.date,
+              { color: textSecondary },
+            ]}
+          >
+            {fecha}
+          </Text>
+        </TouchableOpacity>
+      </Swipeable>
     </Animated.View>
   );
 }
