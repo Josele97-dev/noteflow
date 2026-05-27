@@ -14,6 +14,8 @@ NoteFlow separa claramente tres tipos de información:
 
 De esta forma, cada cosa tiene su lugar y la interfaz se adapta al tipo de contenido, en lugar de forzar todo en el mismo molde.
 
+---
+
 ## Usuario objetivo y uso en su día a día
 
 El usuario objetivo es alguien que:
@@ -30,6 +32,8 @@ Ejemplos de uso diario:
 
 La app está pensada para abrirla, hacer algo concreto en pocos segundos y cerrarla, sin fricción.
 
+---
+
 ## Funcionalidades principales
 
 - **Tres secciones principales:**
@@ -44,6 +48,23 @@ La app está pensada para abrirla, hacer algo concreto en pocos segundos y cerra
 - **Creación de nuevo contenido:**
   - Pantalla `crear` que adapta el formulario según el tipo de nota.
   - Validación con Zod para evitar datos incompletos.
+  - Captura automática de ubicación al guardar (con permiso del usuario).
+  - Modal de recordatorio al guardar — el usuario puede programar una notificación local para cualquier entrada.
+
+- **Notificaciones locales:**
+  - Al crear cualquier entrada, se ofrece programar un recordatorio.
+  - El usuario elige fecha y hora con un picker custom.
+  - La notificación se lanza aunque la app esté cerrada.
+
+- **Geolocalización:**
+  - Al crear una entrada, se captura automáticamente la ubicación del dispositivo.
+  - La dirección se guarda junto a la nota en la base de datos y persiste entre sesiones.
+  - Se muestra en el detalle de cada entrada con un chip 📍.
+
+- **Gestos y animaciones:**
+  - Swipe-to-delete en las cards de notas, tareas e ideas — deslizar a la izquierda elimina la entrada.
+  - Animaciones de entrada escalonadas (FadeInDown) al cargar las listas.
+  - Animaciones imperativas en pantallas de detalle para evitar parpadeo en Android.
 
 - **Autenticación:**
   - Registro e inicio de sesión con Firebase Auth.
@@ -57,7 +78,7 @@ La app está pensada para abrirla, hacer algo concreto en pocos segundos y cerra
 - **Backend y persistencia en la nube:**
   - API REST con Next.js desplegada en Vercel.
   - Base de datos PostgreSQL en Neon.
-  - Los datos se sincronizan en tiempo real con el servidor.
+  - Los datos se sincronizan con el servidor en cada acción.
 
 - **Archivado:**
   - Posibilidad de archivar notas, ideas y tareas.
@@ -65,42 +86,57 @@ La app está pensada para abrirla, hacer algo concreto en pocos segundos y cerra
 
 - **Estado global:**
   - Gestión de notas, ideas y checklists con Zustand.
-  - Las acciones llaman a la API REST en vez de guardar localmente.
+  - Las acciones llaman a la API REST; Zustand actúa como caché en memoria durante la sesión.
 
 - **Listas de alto rendimiento:**
-  - Uso de FlashList en las tres pestañas.
+  - Uso de FlashList en las tres pestañas principales.
 
 - **Tema visual:**
   - Soporte para modo claro y oscuro con un sistema de diseño propio.
+  - En modo claro, los headers y la navegación usan el color primario azul (`#0A4D9C`).
+  - En modo oscuro, los headers usan el color de card para integrarse con el fondo oscuro.
 
 - **UX:**
   - Feedback háptico al eliminar, archivar y completar checklists.
   - Estados vacíos cuando no hay contenido.
-  - Animaciones de entrada y salida en pantallas de detalle.
+  - Splash screen personalizado con fondo azul primario.
+  - Icono de notificación personalizado para Android.
+
+---
 
 ## Stack técnico
 
 - **App móvil:** Expo SDK 55, React Native, TypeScript
 - **Navegación:** Expo Router
-- **Estado global:** Zustand
+- **Estado global:** Zustand (sin persist — hidratación desde API en cada arranque)
 - **Autenticación:** Firebase Auth + Firebase Admin SDK
 - **Base de datos de perfiles:** Firestore
-- **Backend:** Next.js desplegado en Vercel
+- **Backend:** Next.js 16 desplegado en Vercel
 - **Base de datos:** PostgreSQL en Neon
 - **Almacenamiento de imágenes:** AWS S3
 - **Validación:** Zod
+- **Animaciones:** Reanimated 3
+- **Gestos:** react-native-gesture-handler
+- **Notificaciones locales:** expo-notifications
+- **Geolocalización:** expo-location
+
+---
 
 ## Repositorio y estructura
 
+```
 noteflow_55/
-app/           → rutas con Expo Router
-components/    → componentes reutilizables
-store/         → Zustand store
-lib/           → funciones de API
-types/         → tipos TypeScript
-constants/     → tema visual
-hooks/         → hooks personalizados
-docs/          → documentación
+  app/           → rutas con Expo Router
+  components/    → componentes reutilizables
+  store/         → Zustand store
+  lib/           → funciones de API
+  types/         → tipos TypeScript
+  constants/     → tema visual
+  hooks/         → hooks personalizados
+  docs/          → documentación
+```
+
+---
 
 ## API Backend
 

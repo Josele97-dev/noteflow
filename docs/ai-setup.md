@@ -16,7 +16,7 @@ Las herramientas de IA pueden generar código muy útil, pero también pueden:
 - Proponer estructuras que no encajan con Expo Router  
 - Ignorar el sistema de diseño  
 - Romper la arquitectura del estado global  
-- Generar animaciones declarativas que aumentan el parpadeo  
+- Generar animaciones declarativas que aumentan el parpadeo en pantallas  
 
 Por eso, la configuración inicial fue clave para que la IA trabajara **a favor del proyecto**, no en contra.
 
@@ -30,10 +30,12 @@ Se creó un archivo `.cursorrules` en la raíz del proyecto con:
 ### ✔ Contexto del proyecto
 - App Expo con TypeScript  
 - Navegación con Expo Router  
-- Estado global con Zustand  
-- Persistencia con AsyncStorage  
+- Estado global con Zustand (sin persist — la hidratación viene de la API)  
+- Persistencia real con API REST en Vercel + Neon (PostgreSQL)  
+- Autenticación con Firebase Auth  
 - FlashList para listas  
-- Reanimated para animaciones imperativas  
+- Reanimated para animaciones  
+- Gesture Handler para gestos (swipe-to-delete)  
 - Sistema de diseño propio con modo claro/oscuro  
 
 ### ✔ Reglas de estilo
@@ -47,13 +49,13 @@ Se creó un archivo `.cursorrules` en la raíz del proyecto con:
 - **No usar librerías nativas no compatibles con Expo**  
 - **No usar React Navigation (solo Expo Router)**  
 - **No usar Context API para estado global (solo Zustand)**  
-- **No usar animaciones declarativas (`entering`, `exiting`) para pantallas**  
-  - Estas animaciones aumentan el parpadeo en SDK 55  
-  - Se mantienen implementadas, pero NO se usan  
-  - Se usa animación imperativa para reducir flicker  
+- **No usar animaciones declarativas (`entering`, `exiting`) en pantallas de detalle**  
+  - Estas animaciones aumentan el parpadeo en Android  
+  - Se usan en listas y cards (FadeInDown, FadeOut) donde sí funcionan bien  
+  - En pantallas de detalle se usa animación imperativa para reducir flicker  
 
 ### ✔ Objetivo final
-Evitar que Cursor generara código que rompiera la arquitectura o que reintrodujera problemas ya resueltos (como el flicker).
+Evitar que Cursor generara código que rompiera la arquitectura o que reintrodujera problemas ya resueltos.
 
 ---
 
@@ -65,6 +67,7 @@ Estas herramientas se usaron para:
 - Revisar decisiones técnicas  
 - Generar documentación  
 - Proponer alternativas de arquitectura  
+- Implementar funcionalidades completas con contexto del proyecto  
 
 Para evitar inconsistencias, se configuró un **prompt de sistema persistente** con:
 
@@ -72,38 +75,50 @@ Para evitar inconsistencias, se configuró un **prompt de sistema persistente** 
 - Expo SDK 55  
 - React Native 0.76  
 - Expo Router  
-- Zustand + persist  
+- Zustand (sin persist — hidratación desde API en cada arranque)  
 - FlashList  
 - Reanimated 3  
+- Gesture Handler  
 - Zod  
-- AsyncStorage  
+- Firebase Auth  
+- API REST propia: Next.js 16 + Neon (PostgreSQL) desplegada en Vercel  
+- expo-notifications (notificaciones locales programadas)  
+- expo-location (geolocalización y geocodificación inversa)  
 
 ### ✔ Convenciones del proyecto
 - Estructura de carpetas fija  
 - Tipos definidos en `types/`  
 - Store único en `store/notesStore.ts`  
 - Tema visual en `constants/theme.ts`  
-- Animaciones imperativas para pantallas  
+- Animaciones imperativas para pantallas de detalle  
+- Animaciones declarativas (FadeInDown) solo en listas  
 - Nada de librerías externas no aprobadas  
 
 ### ✔ Restricciones
-- No generar código que dependa de nativos no soportados  
+- No generar código que dependa de módulos nativos no soportados en Expo Go  
 - No usar APIs obsoletas  
 - No modificar la estructura de rutas  
-- No usar animaciones declarativas para pantallas (por el parpadeo)  
+- No usar animaciones declarativas en pantallas (solo en listas)  
 
 ---
 
 # Cómo la IA ayudó realmente en el proyecto
 
-La IA se usó como apoyo en:
-
 ### ✔ Resolución de errores  
 Especialmente en:
-- Zustand + persist  
+- Zustand e hidratación desde API  
 - FlashList  
 - Expo Router  
-- Reanimated  
+- Reanimated + Gesture Handler  
+- Módulos nativos (expo-notifications, expo-location) y su incompatibilidad con Expo Go  
+
+### ✔ Implementación de funcionalidades
+- Sistema de temas claro/oscuro con color primario azul en headers y fondos  
+- Notificaciones locales programadas con picker de fecha/hora custom (sin módulos nativos)  
+- Geolocalización al crear entradas con persistencia en base de datos  
+- Swipe-to-delete en cards con animación de rebote  
+- Animaciones de entrada escalonadas en listas  
+- Icono y splash screen personalizados con fondo azul primario  
 
 ### ✔ Refactorización  
 Para limpiar código, mejorar legibilidad y evitar duplicación.
@@ -112,29 +127,40 @@ Para limpiar código, mejorar legibilidad y evitar duplicación.
 Ayudó a redactar partes complejas de forma clara y profesional.
 
 ### ✔ Exploración técnica  
-Comparación entre librerías UI, decisiones de arquitectura, etc.
+Comparación entre librerías, decisiones de arquitectura, resolución de problemas de persistencia.
 
 ---
 
-# Por qué NO se usaron las animaciones declarativas de Reanimated
+# Por qué NO se usan las animaciones declarativas en pantallas
 
-Este punto es clave y se documenta también en `react-native-teoria.md`, pero aquí queda registrado:
-
-### Las animaciones declarativas (`entering`, `exiting`) provocan más parpadeo  
-En Expo SDK 55, estas animaciones:
+### Las animaciones declarativas (`entering`, `exiting`) en pantallas provocan parpadeo  
+En Android con Expo SDK 55, estas animaciones en pantallas de detalle:
 
 - Hacen remount interno  
-- No permiten sincronizar salida con `router.back()`  
+- No permiten sincronizar la salida con `router.back()`  
 - No permiten controlar scale + translate + opacity juntos  
-- Se rompen con FlashList  
 - Aumentan el flicker en Android  
 
 ### ✔ Por eso se decidió:
-- Mantenerlas implementadas (por si se usan en listas o chips)  
+- **Usarlas en listas y cards** (FadeInDown escalonado, FadeOut al eliminar) donde funcionan correctamente  
 - **NO usarlas en pantallas de detalle**  
-- Usar animación imperativa con `useSharedValue` + `withTiming`  
+- Usar animación imperativa con `useSharedValue` + `withTiming` en pantallas  
 
 Esto redujo el parpadeo al mínimo posible.
+
+---
+
+# Arquitectura de persistencia
+
+A diferencia de lo que podría sugerirse con Zustand, **no se usa `persist` ni AsyncStorage** para guardar el estado.  
+La persistencia real funciona así:
+
+1. Al arrancar la app, `fetchAll()` llama a la API y carga todos los datos  
+2. Cada acción (crear, editar, eliminar, archivar) hace una llamada a la API inmediatamente  
+3. La API guarda en Neon (PostgreSQL) en Vercel  
+4. El store de Zustand actúa como caché en memoria durante la sesión  
+
+Esto garantiza que los datos persisten entre sesiones y dispositivos, y que siempre están sincronizados con el servidor.
 
 ---
 
@@ -143,8 +169,8 @@ Esto redujo el parpadeo al mínimo posible.
 La configuración de IA fue esencial para:
 
 - Mantener coherencia técnica  
-- Evitar errores comunes  
-- Acelerar el desarrollo  
+- Evitar errores comunes con módulos nativos  
+- Acelerar el desarrollo de funcionalidades complejas  
 - Documentar decisiones  
 - Reducir el parpadeo en transiciones  
 - Mantener una arquitectura limpia y estable  

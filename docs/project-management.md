@@ -45,16 +45,22 @@ El tablero contiene cinco columnas que representan el flujo completo de trabajo:
 Cada funcionalidad principal de NoteFlow tiene su propia tarjeta.  
 Ejemplos:
 
-- Crear estructura inicial del proyecto  
-- Implementar navegación con Expo Router  
-- Crear Zustand store  
-- Implementar persistencia con AsyncStorage  
-- Crear pantallas de detalle  
-- Añadir animaciones con Reanimated  
-- Resolver parpadeo en transiciones  
-- Implementar FlashList en las tres pestañas  
-- Crear formulario con Zod  
-- Añadir Haptics  
+- Crear estructura inicial del proyecto
+- Implementar navegación con Expo Router
+- Crear Zustand store
+- Implementar persistencia con API REST + Neon (PostgreSQL)
+- Crear pantallas de detalle
+- Añadir animaciones de entrada con Reanimated (FadeInDown en listas)
+- Implementar swipe-to-delete con Gesture Handler
+- Resolver parpadeo en transiciones (animación imperativa en pantallas)
+- Implementar FlashList en las tres pestañas
+- Crear formulario con Zod
+- Añadir Haptics
+- Implementar notificaciones locales programadas con expo-notifications
+- Implementar geolocalización y persistencia de ubicación con expo-location
+- Diseñar sistema de temas claro/oscuro con color primario azul
+- Configurar splash screen e icono de notificación personalizados
+- Desplegar API en Vercel y configurar base de datos en Neon
 
 Cada tarjeta se divide en subtareas técnicas concretas para evitar ambigüedad.  
 Esto permitió avanzar de forma constante y medir el progreso real.
@@ -65,11 +71,11 @@ Esto permitió avanzar de forma constante y medir el progreso real.
 
 El flujo fue:
 
-1. Seleccionar tareas del Backlog → Todo  
-2. Mover a In Progress al empezar  
-3. Pasar a Review cuando la funcionalidad estaba implementada  
-4. Probar en dispositivo real y simulador  
-5. Mover a Done cuando todo funcionaba sin errores  
+1. Seleccionar tareas del Backlog → Todo
+2. Mover a In Progress al empezar
+3. Pasar a Review cuando la funcionalidad estaba implementada
+4. Probar en dispositivo real (build preview en Android)
+5. Mover a Done cuando todo funcionaba sin errores
 
 Este sistema evitó perder tiempo, permitió detectar dependencias entre tareas y mantuvo el proyecto ordenado.
 
@@ -79,7 +85,7 @@ Este sistema evitó perder tiempo, permitió detectar dependencias entre tareas 
 
 El enlace al tablero de Trello está incluido en:
 
-- README.md  
+- README.md
 - docs/project-management.md (este archivo)
 
 Esto permite que cualquier persona que revise el proyecto pueda ver cómo se organizó el trabajo desde el inicio.
@@ -91,10 +97,10 @@ Esto permite que cualquier persona que revise el proyecto pueda ver cómo se org
 La organización previa fue clave para que el desarrollo avanzara sin bloqueos.  
 Gracias al tablero pude:
 
-- Priorizar correctamente  
-- Evitar tareas duplicadas  
-- Mantener una visión clara del proyecto  
-- Controlar el progreso real  
-- Documentar cada fase del desarrollo  
+- Priorizar correctamente
+- Evitar tareas duplicadas
+- Mantener una visión clara del proyecto
+- Controlar el progreso real
+- Documentar cada fase del desarrollo
 
 Este enfoque permitió que NoteFlow se desarrollara como un proyecto profesional, no como un conjunto de archivos sueltos.

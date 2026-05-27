@@ -49,6 +49,21 @@ Cada tipo tiene su propia vista, detalle, flujo de edición y sistema de archiva
 - Archivado
 - Organización visual rápida
 
+### Notificaciones locales
+- Al crear cualquier entrada se ofrece programar un recordatorio
+- El usuario elige fecha y hora con un picker custom sin dependencias nativas
+- La notificación se lanza aunque la app esté cerrada
+
+### Geolocalización
+- Captura automática de ubicación al crear una entrada
+- La dirección se guarda en la base de datos y persiste entre sesiones
+- Se muestra en el detalle de cada entrada con un chip 📍
+
+### Gestos y animaciones
+- Swipe-to-delete en cards — deslizar a la izquierda elimina la entrada
+- Animaciones de entrada escalonadas (FadeInDown) al cargar las listas
+- Animaciones imperativas en pantallas de detalle para evitar parpadeo en Android
+
 ---
 
 ## Backend
@@ -66,27 +81,31 @@ La app consume una API REST propia desplegada en Vercel: https://noteflow-api.ve
 
 - FlashList en todas las pantallas
 - Optimización para +50 elementos sin pérdida de FPS
-- Re-render controlado
+- Re-render controlado con Zustand
 - Búsqueda en tiempo real sin bloqueos
+- Animaciones en UI thread con Reanimated (no bloquean el JS thread)
 
 ---
 
 ## UI / UX
 
 - Tema claro y oscuro automático
+- En modo claro: headers y navegación con color primario azul (`#0A4D9C`)
+- En modo oscuro: headers con color de card para integrarse con el fondo oscuro
 - Sistema de tokens en `constants/theme.ts`
 - Animaciones suaves con Reanimated
 - Interacciones con feedback háptico
 - Estados vacíos personalizados
-- Diseño limpio y minimalista
+- Splash screen con fondo azul primario
+- Icono de notificación personalizado para Android
 
 ---
 
 ## Estado global
 
-- Zustand como store principal
-- Las acciones sincronizan con la API REST
-- Cada acción (crear, editar, eliminar) actualiza el estado local y el servidor
+- Zustand como store principal (sin persist)
+- En cada arranque `fetchAll()` hidrata el estado desde la API
+- Cada acción (crear, editar, eliminar) actualiza el estado local y llama a la API
 
 ---
 
@@ -152,6 +171,7 @@ components/
     BaseList.tsx
   ui/
     EditHeader.tsx
+    DateTimePicker.tsx
 
 constants/
   theme.ts
@@ -170,6 +190,9 @@ lib/
 
 store/
   notesStore.ts
+
+types/
+  index.ts
 
 utils/
   ideaColors.ts
@@ -202,9 +225,13 @@ https://trello.com/b/I1L4Exy8/noteflow
 - Firebase Admin SDK
 - FlashList
 - Reanimated 3
+- react-native-gesture-handler
+- expo-notifications
+- expo-location
 - Expo Haptics
 - Expo Image Picker
 - AWS S3
+- Zod
 - TypeScript
 
 ---
@@ -218,5 +245,6 @@ npm install
 npx expo start
 ```
 
-> La app requiere un Development Build — no funciona con Expo Go.
-> Genera el build con `eas build --profile development --platform android`
+> La app requiere un build propio — no funciona con Expo Go.  
+> Para desarrollo: `eas build --profile development --platform android`  
+> Para pruebas en dispositivo: `eas build --profile preview --platform android`
