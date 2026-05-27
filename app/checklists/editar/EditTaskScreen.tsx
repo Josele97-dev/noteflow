@@ -37,6 +37,9 @@ export default function EditTaskScreen() {
   const [subtareas, setSubtareas] = useState<Subtarea[]>(task?.items ?? []);
   const { animStyle, exit } = useExitAnimation();
 
+  // 🔥 ANTI‑SPAM
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {}, []);
 
   if (!task) return null;
@@ -64,11 +67,21 @@ export default function EditTaskScreen() {
   };
 
   const save = async () => {
+    if (isSaving) return; // 🔥 evita doble click
     if (!title.trim()) return;
-    const cleaned = subtareas.filter((s) => s.text.trim().length > 0);
-    updateChecklist(task.id, { title, items: cleaned });
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    exit(router.back);
+
+    setIsSaving(true);
+
+    try {
+      const cleaned = subtareas.filter((s) => s.text.trim().length > 0);
+      updateChecklist(task.id, { title, items: cleaned });
+
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      exit(router.back);
+    } catch (e) {
+      console.log('Error guardando:', e);
+      setIsSaving(false); // 🔥 reactivar si falla
+    }
   };
 
   return (
@@ -80,6 +93,7 @@ export default function EditTaskScreen() {
           title="Editar tarea"
           onBack={router.back}
           onSave={save}
+          disabled={isSaving} // 🔥 botón desactivado mientras guarda
         />
 
         <KeyboardAvoidingView
@@ -98,7 +112,10 @@ export default function EditTaskScreen() {
               onChangeText={setTitle}
               placeholder="Título de la tarea"
               placeholderTextColor={theme.textTertiary}
-              style={[styles.titleInput, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
+              style={[
+                styles.titleInput,
+                { color: theme.text, backgroundColor: theme.card, borderColor: theme.border },
+              ]}
             />
 
             <Text style={[styles.label, { color: theme.textSecondary }]}>Subtareas</Text>
@@ -111,13 +128,19 @@ export default function EditTaskScreen() {
                   onBlur={() => handleBlur(sub.id)}
                   placeholder="Subtarea..."
                   placeholderTextColor={theme.textTertiary}
-                  style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
+                  style={[
+                    styles.input,
+                    { color: theme.text, backgroundColor: theme.card, borderColor: theme.border },
+                  ]}
                 />
               </FadeInDown>
             ))}
 
             <TouchableOpacity
-              style={[styles.addBtn, { borderColor: theme.border, opacity: hasEmptySubtarea ? 0.4 : 1 }]}
+              style={[
+                styles.addBtn,
+                { borderColor: theme.border, opacity: hasEmptySubtarea ? 0.4 : 1 },
+              ]}
               disabled={hasEmptySubtarea}
               onPress={addSubtarea}
             >

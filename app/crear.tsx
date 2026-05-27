@@ -34,11 +34,9 @@ async function getCurrentLocation(): Promise<NoteLocation | null> {
   try {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') return null;
-
     const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
     const [addr] = await Location.reverseGeocodeAsync(pos.coords);
     const address = [addr.street, addr.city].filter(Boolean).join(', ') || 'Ubicación desconocida';
-
     return { latitude: pos.coords.latitude, longitude: pos.coords.longitude, address };
   } catch {
     return null;
@@ -47,11 +45,7 @@ async function getCurrentLocation(): Promise<NoteLocation | null> {
 
 const TIPOS = ['nota', 'tarea', 'idea'] as const;
 const COLORES = ['#FFD700', '#FF6B6B', '#6C63FF', '#4CAF50', '#FF9800', '#00BCD4'];
-
-const noteSchema = z.object({
-  title: z.string().min(3, 'Mínimo 3 caracteres'),
-  content: z.string().min(1, 'Contenido vacío')
-});
+const noteSchema = z.object({ title: z.string().min(3, 'Mínimo 3 caracteres'), content: z.string().min(1, 'Contenido vacío') });
 const baseSchema = z.object({ title: z.string().min(3, 'Mínimo 3 caracteres') });
 
 const AddRow = ({ value, onChange, onAdd, placeholder, theme }: any) => (
@@ -73,7 +67,7 @@ export default function NuevaNota() {
   const insets = useSafeAreaInsets();
   const isDark = (useColorScheme() ?? 'light') === 'dark';
 
-  const { addNote, addChecklist, addIdea, updateNoteLocation } = useNotesStore();
+  const { addNote, addChecklist, addIdea, updateNote, updateChecklist, updateIdea } = useNotesStore();
   const { tipo: tipoParam } = useLocalSearchParams<{ tipo: string }>();
 
   const [tipo, setTipo] = useState<typeof TIPOS[number]>(tipoParam as any || 'nota');
@@ -87,38 +81,62 @@ export default function NuevaNota() {
   const [errors, setErrors] = useState<any>({});
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [pickerMode, setPickerMode] = useState<'date' | 'time' | null>(null);
-
   const [reminderDate, setReminderDate] = useState(new Date());
   const [dateError, setDateError] = useState('');
   const [isDateValid, setIsDateValid] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [capturedLocation, setCapturedLocation] = useState<NoteLocation | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [savedTipo, setSavedTipo] = useState<typeof TIPOS[number]>('nota');
 
   const inputStyle = [styles.input, { backgroundColor: theme.card, borderColor: theme.border, color: theme.text }];
 
   const guardar = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
     setErrors({});
+
     const schema = tipo === 'nota' ? noteSchema : baseSchema;
     const result = schema.safeParse({ title, content });
-    if (!result.success) return setErrors(result.error.flatten().fieldErrors);
-
-    let created: any;
-
-    if (tipo === 'nota') {
-      created = await addNote({ title, content });
-    } else if (tipo === 'tarea') {
-      created = await addChecklist({
-        title,
-        items: tareas.map((t, i) => ({ id: `${Date.now()}-${i}`, text: t, isCompleted: false }))
-      });
-    } else {
-      created = await addIdea({ title, content, color, tags });
+    if (!result.success) {
+      setIsSaving(false);
+      return setErrors(result.error.flatten().fieldErrors);
     }
 
-    getCurrentLocation().then((loc) => {
-      if (loc) updateNoteLocation(created.id, loc);
-    });
+    try {
+      // 1. Guarda la entrada inmediatamente sin ubicación
+      let created: { id: string };
+      if (tipo === 'nota') {
+        created = await addNote({ title, content });
+      } else if (tipo === 'tarea') {
+        created = await addChecklist({
+          title,
+          items: tareas.map((t, i) => ({ id: `${Date.now()}-${i}`, text: t, isCompleted: false })),
+        });
+      } else {
+        created = await addIdea({ title, content, color, tags });
+      }
 
-    setShowReminderModal(true);
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      // Guarda el id y tipo para usarlos en el modal y en la ubicación
+      setSavedId(created.id);
+      setSavedTipo(tipo);
+
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      setShowReminderModal(true);
+      setIsSaving(false);
+
+      // 2. Captura la ubicación en segundo plano y actualiza sin bloquear
+      getCurrentLocation().then((location) => {
+        if (!location) return;
+        setCapturedLocation(location);
+        if (tipo === 'nota') updateNote(created.id, { location });
+        else if (tipo === 'tarea') updateChecklist(created.id, { location });
+        else updateIdea(created.id, { location });
+      });
+
+    } catch {
+      setIsSaving(false);
+    }
   };
 
   const handleReminder = async (withReminder: boolean) => {
@@ -134,11 +152,13 @@ export default function NuevaNota() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={[styles.backIcon, { color: isDark ? theme.text : '#fff' }]}>✕</Text>
         </TouchableOpacity>
-
         <Text style={[styles.headerTitle, { color: isDark ? theme.text : '#fff' }]}>Nueva entrada</Text>
-
-        <TouchableOpacity onPress={guardar} style={[styles.saveBtn, { backgroundColor: isDark ? theme.primary : 'rgba(255,255,255,0.2)' }]}>
-          <Text style={styles.saveBtnText}>Guardar</Text>
+        <TouchableOpacity
+          onPress={guardar}
+          disabled={isSaving}
+          style={[styles.saveBtn, { backgroundColor: isDark ? theme.primary : 'rgba(255,255,255,0.2)', opacity: isSaving ? 0.5 : 1 }]}
+        >
+          <Text style={styles.saveBtnText}>{isSaving ? 'Guardando…' : 'Guardar'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -174,7 +194,6 @@ export default function NuevaNota() {
             <AddRow value={tareaInput} onChange={setTareaInput}
               onAdd={() => tareaInput.trim() && (setTareas((p) => [...p, tareaInput.trim()]), setTareaInput(''))}
               placeholder="Añadir tarea" theme={theme} />
-
             {tareas.map((t, i) => (
               <View key={i} style={styles.itemRow}>
                 <Text style={[styles.item, { color: theme.textSecondary }]}>• {t}</Text>
@@ -191,7 +210,6 @@ export default function NuevaNota() {
             <AddRow value={tagInput} onChange={setTagInput}
               onAdd={() => tagInput.trim() && (setTags((p) => [...p, tagInput.trim()]), setTagInput(''))}
               placeholder="Añadir etiqueta" theme={theme} />
-
             <View style={styles.tags}>
               {tags.map((tag, i) => (
                 <TouchableOpacity key={i} style={[styles.tag, { backgroundColor: theme.primary + '22' }]}
@@ -200,7 +218,6 @@ export default function NuevaNota() {
                 </TouchableOpacity>
               ))}
             </View>
-
             <Text style={[styles.label, { color: theme.text }]}>Color</Text>
             <View style={styles.colores}>
               {COLORES.map((c) => (
@@ -209,7 +226,6 @@ export default function NuevaNota() {
                   onPress={() => setColor(c)} />
               ))}
             </View>
-
             <Text style={[styles.label, { color: theme.text }]}>Descripción</Text>
             <TextInput style={[...inputStyle, styles.textarea]}
               placeholder="Describe tu idea..." placeholderTextColor={theme.textTertiary}
@@ -218,22 +234,27 @@ export default function NuevaNota() {
         )}
       </ScrollView>
 
-      <Modal
-        visible={showReminderModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => handleReminder(false)}
-        onDismiss={() => handleReminder(false)}
-      >
+      <Modal visible={showReminderModal} transparent animationType="fade"
+        onRequestClose={() => handleReminder(false)} onDismiss={() => handleReminder(false)}>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalBox, { backgroundColor: theme.card }]}>
             <Text style={[styles.modalTitle, { color: theme.text }]}>¿Añadir recordatorio?</Text>
             <Text style={[styles.modalSub, { color: theme.textSecondary }]}>Te notificaremos para "{title}"</Text>
 
+            {capturedLocation ? (
+              <View style={[styles.locationRow, { backgroundColor: theme.background }]}>
+                <Text>📍</Text>
+                <Text style={{ color: theme.textSecondary, fontSize: 13, flex: 1 }}>{capturedLocation.address}</Text>
+              </View>
+            ) : (
+              <View style={[styles.locationRow, { backgroundColor: theme.background }]}>
+                <Text>📍</Text>
+                <Text style={{ color: theme.textTertiary, fontSize: 13 }}>Obteniendo ubicación…</Text>
+              </View>
+            )}
+
             {dateError !== '' && (
-              <Text style={{ color: theme.danger, marginBottom: 8, fontWeight: '600' }}>
-                {dateError}
-              </Text>
+              <Text style={{ color: theme.danger, fontWeight: '600' }}>{dateError}</Text>
             )}
 
             <View style={styles.row}>
@@ -241,11 +262,8 @@ export default function NuevaNota() {
                 style={[styles.dateBtn, { borderColor: pickerMode === 'date' ? theme.primary : theme.border }]}
                 onPress={() => setPickerMode(pickerMode === 'date' ? null : 'date')}>
                 <Text style={[styles.dateLabel, { color: theme.textSecondary }]}>📅 Fecha</Text>
-                <Text style={[styles.dateValue, { color: theme.text }]}>
-                  {reminderDate.toLocaleDateString('es-ES')}
-                </Text>
+                <Text style={[styles.dateValue, { color: theme.text }]}>{reminderDate.toLocaleDateString('es-ES')}</Text>
               </TouchableOpacity>
-
               <TouchableOpacity
                 style={[styles.dateBtn, { borderColor: pickerMode === 'time' ? theme.primary : theme.border }]}
                 onPress={() => setPickerMode(pickerMode === 'time' ? null : 'time')}>
@@ -257,57 +275,34 @@ export default function NuevaNota() {
             </View>
 
             {pickerMode && (
-              <DateTimePickerCustom
-                value={reminderDate}
-                mode={pickerMode}
+              <DateTimePickerCustom value={reminderDate} mode={pickerMode}
                 onChange={(date) => {
-                  const hoy = new Date();
-                  hoy.setHours(0, 0, 0, 0);
-
                   const ahora = new Date();
-
+                  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
                   if (date < hoy) {
                     setDateError('No puedes seleccionar una fecha pasada');
-                    setReminderDate(ahora);
-                    setIsDateValid(false);
-                    setTimeout(() => setDateError(''), 2500);
-                    return;
+                    setReminderDate(ahora); setIsDateValid(false);
+                    setTimeout(() => setDateError(''), 2500); return;
                   }
-
                   if (date.toDateString() === ahora.toDateString() && date < ahora) {
                     setDateError('La hora no puede ser anterior a la actual');
-                    setReminderDate(ahora);
-                    setIsDateValid(false);
-                    setTimeout(() => setDateError(''), 2500);
-                    return;
+                    setReminderDate(ahora); setIsDateValid(false);
+                    setTimeout(() => setDateError(''), 2500); return;
                   }
-
-                  setIsDateValid(true);
-                  setReminderDate(date);
+                  setIsDateValid(true); setReminderDate(date);
                 }}
               />
             )}
 
             <View style={styles.modalActions}>
-              <TouchableOpacity style={[styles.modalBtn, { borderColor: theme.border }]}
-                onPress={() => handleReminder(false)}>
+              <TouchableOpacity style={[styles.modalBtn, { borderColor: theme.border }]} onPress={() => handleReminder(false)}>
                 <Text style={styles.modalBtnTextSec}>Sin recordatorio</Text>
               </TouchableOpacity>
-
               <TouchableOpacity
                 disabled={!isDateValid}
-                style={[
-                  styles.modalBtn,
-                  { backgroundColor: isDateValid ? theme.primary : theme.border }
-                ]}
-                onPress={() => isDateValid && handleReminder(true)}
-              >
-                <Text style={[
-                  styles.modalBtnText,
-                  { opacity: isDateValid ? 1 : 0.4 }
-                ]}>
-                  Añadir 🔔
-                </Text>
+                style={[styles.modalBtn, { backgroundColor: isDateValid ? theme.primary : theme.border }]}
+                onPress={() => isDateValid && handleReminder(true)}>
+                <Text style={[styles.modalBtnText, { opacity: isDateValid ? 1 : 0.4 }]}>Añadir 🔔</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -345,6 +340,7 @@ const styles = StyleSheet.create({
   label: { fontSize: 15, fontWeight: '600', marginBottom: 8 },
   colores: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   colorBtn: { width: 36, height: 36, borderRadius: 18 },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: 10 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   modalBox: { width: '100%', borderRadius: 20, padding: 24, gap: 12 },
   modalTitle: { fontSize: 18, fontWeight: '700' },
@@ -355,5 +351,5 @@ const styles = StyleSheet.create({
   modalActions: { flexDirection: 'row', gap: 10, marginTop: 4 },
   modalBtn: { flex: 1, padding: 14, borderRadius: 12, alignItems: 'center' },
   modalBtnText: { color: '#fff', fontWeight: '600' },
-  modalBtnTextSec: { color: '#888', fontWeight: '600' }
+  modalBtnTextSec: { color: '#888', fontWeight: '600' },
 });

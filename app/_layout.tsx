@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import { useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { colors } from '../constants/theme';
 import { useNotesStore } from '../store/notesStore';
 
@@ -25,22 +26,17 @@ export default function RootLayout() {
   }, [theme.background]);
 
   useEffect(() => {
-    const unsubscribe = auth().onAuthStateChanged((u) => {
-      setUser(u);
-    });
+    const unsubscribe = auth().onAuthStateChanged((u) => setUser(u));
     return unsubscribe;
   }, []);
 
   useEffect(() => {
     if (user === undefined) return;
-
     SplashScreen.hideAsync();
-
     // @ts-ignore
     const inAuthGroup = String(segments[0]) === '(auth)';
     // @ts-ignore
     const inIndex = segments.length === 0;
-
     if (!user && !inAuthGroup) {
       router.replace('/(auth)/login' as any);
     } else if (user && (inIndex || inAuthGroup)) {
@@ -52,17 +48,12 @@ export default function RootLayout() {
   if (user === undefined) return null;
 
   return (
-    <>
-      <StatusBar style={isDark ? 'light' : 'light'} translucent backgroundColor="transparent" />
-
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <StatusBar style="light" translucent backgroundColor="transparent" />
       <Stack
         screenOptions={{
-          headerStyle: {
-            backgroundColor: isDark ? theme.card : theme.primary,
-          },
-          headerTitleStyle: {
-            color: isDark ? theme.text : '#ffffff',
-          },
+          headerStyle: { backgroundColor: isDark ? theme.card : theme.primary },
+          headerTitleStyle: { color: isDark ? theme.text : '#ffffff' },
           headerTintColor: isDark ? theme.primary : '#ffffff',
           contentStyle: { backgroundColor: theme.background },
         }}
@@ -78,6 +69,6 @@ export default function RootLayout() {
         <Stack.Screen name="checklists/editar/EditTaskScreen" options={{ title: '', presentation: 'modal', animation: 'slide_from_bottom', headerShown: false }} />
         <Stack.Screen name="crear" options={{ title: 'Crear', presentation: 'modal', animation: 'fade', headerShown: false }} />
       </Stack>
-    </>
+    </GestureHandlerRootView>
   );
 }

@@ -12,9 +12,9 @@ interface NotesStore {
 
   fetchAll: () => Promise<void>;
 
-  addNote: (note: { title: string; content: string }) => Promise<Note>;
-  addChecklist: (checklist: { title: string; items: any[] }) => Promise<ChecklistNote>;
-  addIdea: (idea: { title: string; content: string; color: string; tags: string[] }) => Promise<IdeaNote>;
+  addNote: (note: { title: string; content: string; location?: NoteLocation }) => Promise<Note>;
+  addChecklist: (checklist: { title: string; items: any[]; location?: NoteLocation }) => Promise<ChecklistNote>;
+  addIdea: (idea: { title: string; content: string; color: string; tags: string[]; location?: NoteLocation }) => Promise<IdeaNote>;
 
   deleteNote: (id: string) => Promise<void>;
   deleteChecklist: (id: string) => Promise<void>;
@@ -33,7 +33,6 @@ interface NotesStore {
   updateIdea: (id: string, data: Partial<IdeaNote>) => Promise<void>;
 
   toggleChecklistItem: (checklistId: string, itemId: string) => Promise<void>;
-
   updateNoteLocation: (id: string, location: NoteLocation) => Promise<void>;
 }
 
@@ -41,6 +40,10 @@ const mapDates = (item: any) => ({
   ...item,
   createdAt: new Date(item.created_at),
   updatedAt: new Date(item.updated_at),
+  // location viene como JSONB de Postgres, puede ser objeto o string
+  location: item.location
+    ? (typeof item.location === 'string' ? JSON.parse(item.location) : item.location)
+    : undefined,
 });
 
 export const useNotesStore = create<NotesStore>()((set, get) => ({
@@ -110,101 +113,60 @@ export const useNotesStore = create<NotesStore>()((set, get) => ({
 
   archiveNote: async (id) => {
     await api.updateNote(id, { archived: true });
-    set((s) => ({
-      notes: s.notes.map((n) => (n.id === id ? { ...n, archived: true } : n)),
-    }));
+    set((s) => ({ notes: s.notes.map((n) => n.id === id ? { ...n, archived: true } : n) }));
   },
 
   archiveChecklist: async (id) => {
     await api.updateChecklist(id, { archived: true });
-    set((s) => ({
-      checklists: s.checklists.map((c) =>
-        c.id === id ? { ...c, archived: true } : c
-      ),
-    }));
+    set((s) => ({ checklists: s.checklists.map((c) => c.id === id ? { ...c, archived: true } : c) }));
   },
 
   archiveIdea: async (id) => {
     await api.updateIdea(id, { archived: true });
-    set((s) => ({
-      ideas: s.ideas.map((i) =>
-        i.id === id ? { ...i, archived: true } : i
-      ),
-    }));
+    set((s) => ({ ideas: s.ideas.map((i) => i.id === id ? { ...i, archived: true } : i) }));
   },
 
   unarchiveNote: async (id) => {
     await api.updateNote(id, { archived: false });
-    set((s) => ({
-      notes: s.notes.map((n) =>
-        n.id === id ? { ...n, archived: false } : n
-      ),
-    }));
+    set((s) => ({ notes: s.notes.map((n) => n.id === id ? { ...n, archived: false } : n) }));
   },
 
   unarchiveChecklist: async (id) => {
     await api.updateChecklist(id, { archived: false });
-    set((s) => ({
-      checklists: s.checklists.map((c) =>
-        c.id === id ? { ...c, archived: false } : c
-      ),
-    }));
+    set((s) => ({ checklists: s.checklists.map((c) => c.id === id ? { ...c, archived: false } : c) }));
   },
 
   unarchiveIdea: async (id) => {
     await api.updateIdea(id, { archived: false });
-    set((s) => ({
-      ideas: s.ideas.map((i) =>
-        i.id === id ? { ...i, archived: false } : i
-      ),
-    }));
+    set((s) => ({ ideas: s.ideas.map((i) => i.id === id ? { ...i, archived: false } : i) }));
   },
 
   updateNote: async (id, data) => {
     const updated = await api.updateNote(id, data);
-    set((s) => ({
-      notes: s.notes.map((n) => (n.id === id ? mapDates(updated) : n)),
-    }));
+    set((s) => ({ notes: s.notes.map((n) => n.id === id ? mapDates(updated) : n) }));
   },
 
   updateChecklist: async (id, data) => {
     const updated = await api.updateChecklist(id, data);
-    set((s) => ({
-      checklists: s.checklists.map((c) =>
-        c.id === id ? mapDates(updated) : c
-      ),
-    }));
+    set((s) => ({ checklists: s.checklists.map((c) => c.id === id ? mapDates(updated) : c) }));
   },
 
   updateIdea: async (id, data) => {
     const updated = await api.updateIdea(id, data);
-    set((s) => ({
-      ideas: s.ideas.map((i) =>
-        i.id === id ? mapDates(updated) : i
-      ),
-    }));
+    set((s) => ({ ideas: s.ideas.map((i) => i.id === id ? mapDates(updated) : i) }));
   },
 
   toggleChecklistItem: async (checklistId, itemId) => {
     set((state) => {
       const idx = state.checklists.findIndex((c) => c.id === checklistId);
       if (idx === -1) return state;
-
       const checklist = state.checklists[idx];
-
       const updatedItems = checklist.items.map((i) =>
         i.id === itemId ? { ...i, isCompleted: !i.isCompleted } : i
       );
-
-      const updatedChecklist = {
-        ...checklist,
-        items: updatedItems,
-        updatedAt: new Date(),
-      };
-
+      const updatedChecklist = { ...checklist, items: updatedItems, updatedAt: new Date() };
       const newChecklists = [...state.checklists];
       newChecklists[idx] = updatedChecklist;
-
       return { checklists: newChecklists };
     });
 
@@ -215,9 +177,9 @@ export const useNotesStore = create<NotesStore>()((set, get) => ({
 
   updateNoteLocation: async (id, location) => {
     set((s) => ({
-      notes: s.notes.map((n) => (n.id === id ? { ...n, location } : n)),
-      checklists: s.checklists.map((c) => (c.id === id ? { ...c, location } : c)),
-      ideas: s.ideas.map((i) => (i.id === id ? { ...i, location } : i)),
+      notes: s.notes.map((n) => n.id === id ? { ...n, location } : n),
+      checklists: s.checklists.map((c) => c.id === id ? { ...c, location } : c),
+      ideas: s.ideas.map((i) => i.id === id ? { ...i, location } : i),
     }));
   },
 }));

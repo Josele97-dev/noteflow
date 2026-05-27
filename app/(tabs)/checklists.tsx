@@ -7,20 +7,13 @@ import React from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 export default function ChecklistsScreen() {
-  const { checklists, _hydrated } = useNotesStore();
+  const { checklists, _hydrated, deleteChecklist } = useNotesStore();
   const router = useRouter();
   const theme = useTheme();
 
   if (!_hydrated) {
     return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: theme.background,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
+      <View style={{ flex: 1, backgroundColor: theme.background, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator color={theme.primary} />
       </View>
     );
@@ -35,10 +28,12 @@ export default function ChecklistsScreen() {
       searchPlaceholder="Buscar listas o tareas..."
       emptyTitle="No hay listas aún"
       emptySubtitle="Pulsa + para crear una"
-      renderItem={({ item }) => (
+      renderItem={({ item, index }) => (
         <ChecklistCard
           checklist={item}
+          index={index}
           onPress={() => router.push(`/checklists/${item.id}`)}
+          onDelete={() => deleteChecklist(item.id)}
         />
       )}
     />

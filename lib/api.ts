@@ -1,4 +1,5 @@
 import auth from '@react-native-firebase/auth';
+import { NoteLocation } from '../types';
 
 const BASE_URL = 'https://noteflow-api.vercel.app/api';
 
@@ -44,7 +45,7 @@ export async function getNotes() {
   return res.json();
 }
 
-export async function createNote(data: { title: string; content?: string }) {
+export async function createNote(data: { title: string; content?: string; location?: NoteLocation }) {
   const res = await fetch(`${BASE_URL}/notes`, {
     method: 'POST',
     headers: await authHeaders(),
@@ -54,7 +55,7 @@ export async function createNote(data: { title: string; content?: string }) {
   return res.json();
 }
 
-export async function updateNote(id: string, data: { title?: string; content?: string; archived?: boolean }) {
+export async function updateNote(id: string, data: { title?: string; content?: string; archived?: boolean; location?: NoteLocation }) {
   const res = await fetch(`${BASE_URL}/notes/${id}`, {
     method: 'PATCH',
     headers: await authHeaders(),
@@ -78,7 +79,7 @@ export async function getIdeas() {
   return res.json();
 }
 
-export async function createIdea(data: { title: string; content?: string; color?: string; tags?: string[] }) {
+export async function createIdea(data: { title: string; content?: string; color?: string; tags?: string[]; location?: NoteLocation }) {
   const res = await fetch(`${BASE_URL}/ideas`, {
     method: 'POST',
     headers: await authHeaders(),
@@ -88,7 +89,7 @@ export async function createIdea(data: { title: string; content?: string; color?
   return res.json();
 }
 
-export async function updateIdea(id: string, data: { title?: string; content?: string; color?: string; archived?: boolean; tags?: string[] }) {
+export async function updateIdea(id: string, data: { title?: string; content?: string; color?: string; archived?: boolean; tags?: string[]; location?: NoteLocation }) {
   const res = await fetch(`${BASE_URL}/ideas/${id}`, {
     method: 'PATCH',
     headers: await authHeaders(),
@@ -112,7 +113,7 @@ export async function getChecklists() {
   return res.json();
 }
 
-export async function createChecklist(data: { title: string; items?: { text: string; isCompleted?: boolean }[] }) {
+export async function createChecklist(data: { title: string; items?: { text: string; isCompleted?: boolean }[]; location?: NoteLocation }) {
   const res = await fetch(`${BASE_URL}/checklists`, {
     method: 'POST',
     headers: await authHeaders(),
@@ -122,7 +123,7 @@ export async function createChecklist(data: { title: string; items?: { text: str
   return res.json();
 }
 
-export async function updateChecklist(id: string, data: { title?: string; archived?: boolean; items?: { text: string; isCompleted?: boolean }[] }) {
+export async function updateChecklist(id: string, data: { title?: string; archived?: boolean; items?: { text: string; isCompleted?: boolean }[]; location?: NoteLocation }) {
   const res = await fetch(`${BASE_URL}/checklists/${id}`, {
     method: 'PATCH',
     headers: await authHeaders(),
@@ -133,7 +134,7 @@ export async function updateChecklist(id: string, data: { title?: string; archiv
 }
 
 export async function deleteChecklist(id: string) {
-  const res = await fetch(`${BASE_URL}/checklists/${id}`, {
+  const res = await fetch(`${BASE_URL}/notes/${id}`, {
     method: 'DELETE',
     headers: await authHeaders(),
   });

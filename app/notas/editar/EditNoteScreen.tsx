@@ -29,13 +29,25 @@ export default function EditNoteScreen() {
   const [content, setContent] = useState(note?.content ?? '');
   const { animStyle, exit } = useExitAnimation();
 
+  // 🔥 ANTI‑SPAM
+  const [isSaving, setIsSaving] = useState(false);
+
   if (!note) return null;
 
   const save = async () => {
+    if (isSaving) return; // 🔥 evita doble click
     if (!title.trim()) return;
-    updateNote(note.id, { title, content });
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    exit(router.back);
+
+    setIsSaving(true);
+
+    try {
+      updateNote(note.id, { title, content });
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      exit(router.back);
+    } catch (e) {
+      console.log('Error guardando:', e);
+      setIsSaving(false); // 🔥 reactivar si falla
+    }
   };
 
   return (
@@ -43,7 +55,12 @@ export default function EditNoteScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       <Animated.View style={[{ flex: 1 }, animStyle]}>
-        <EditHeader title="Editar nota" onBack={router.back} onSave={save} />
+        <EditHeader
+          title="Editar nota"
+          onBack={router.back}
+          onSave={save}
+          disabled={isSaving} 
+        />
 
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -55,7 +72,16 @@ export default function EditNoteScreen() {
           >
             <FadeInDown duration={300} offset={-20} delay={80}>
               <TextInput
-                style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border, fontSize: 18, fontWeight: '600' }]}
+                style={[
+                  styles.input,
+                  {
+                    color: theme.text,
+                    backgroundColor: theme.card,
+                    borderColor: theme.border,
+                    fontSize: 18,
+                    fontWeight: '600',
+                  },
+                ]}
                 placeholder="Título"
                 placeholderTextColor={theme.textTertiary}
                 value={title}
@@ -65,7 +91,16 @@ export default function EditNoteScreen() {
 
             <FadeInDown duration={300} offset={-20} delay={160}>
               <TextInput
-                style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border, minHeight: 200, textAlignVertical: 'top' }]}
+                style={[
+                  styles.input,
+                  {
+                    color: theme.text,
+                    backgroundColor: theme.card,
+                    borderColor: theme.border,
+                    minHeight: 200,
+                    textAlignVertical: 'top',
+                  },
+                ]}
                 placeholder="Contenido"
                 placeholderTextColor={theme.textTertiary}
                 value={content}

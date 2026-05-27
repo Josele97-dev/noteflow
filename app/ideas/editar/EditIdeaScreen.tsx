@@ -30,14 +30,27 @@ export default function EditIdeaScreen() {
   const [tags, setTags] = useState((idea?.tags ?? []).join(', '));
   const { animStyle, exit } = useExitAnimation();
 
+  // 🔥 ANTI‑SPAM
+  const [isSaving, setIsSaving] = useState(false);
+
   if (!idea) return null;
 
   const save = async () => {
+    if (isSaving) return; // 🔥 evita doble click
     if (!title.trim()) return;
-    const tagsArray = tags.split(',').map((t) => t.trim()).filter(Boolean);
-    updateIdea(idea.id, { title, content, tags: tagsArray });
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    exit(router.back);
+
+    setIsSaving(true);
+
+    try {
+      const tagsArray = tags.split(',').map((t) => t.trim()).filter(Boolean);
+      updateIdea(idea.id, { title, content, tags: tagsArray });
+
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      exit(router.back);
+    } catch (e) {
+      console.log('Error guardando:', e);
+      setIsSaving(false); // 🔥 reactivar si falla
+    }
   };
 
   return (
@@ -45,7 +58,12 @@ export default function EditIdeaScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       <Animated.View style={[{ flex: 1 }, animStyle]}>
-        <EditHeader title="Editar idea" onBack={router.back} onSave={save} />
+        <EditHeader
+          title="Editar idea"
+          onBack={router.back}
+          onSave={save}
+          disabled={isSaving} // 🔥 botón desactivado mientras guarda
+        />
 
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -56,7 +74,16 @@ export default function EditIdeaScreen() {
             showsVerticalScrollIndicator={false}
           >
             <TextInput
-              style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border, fontSize: 18, fontWeight: '600' }]}
+              style={[
+                styles.input,
+                {
+                  color: theme.text,
+                  backgroundColor: theme.card,
+                  borderColor: theme.border,
+                  fontSize: 18,
+                  fontWeight: '600',
+                },
+              ]}
               placeholder="Título"
               placeholderTextColor={theme.textTertiary}
               value={title}
@@ -64,7 +91,16 @@ export default function EditIdeaScreen() {
             />
 
             <TextInput
-              style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border, minHeight: 160, textAlignVertical: 'top' }]}
+              style={[
+                styles.input,
+                {
+                  color: theme.text,
+                  backgroundColor: theme.card,
+                  borderColor: theme.border,
+                  minHeight: 160,
+                  textAlignVertical: 'top',
+                },
+              ]}
               placeholder="Contenido"
               placeholderTextColor={theme.textTertiary}
               value={content}
@@ -74,7 +110,14 @@ export default function EditIdeaScreen() {
 
             <Text style={[styles.label, { color: theme.textSecondary }]}>Tags</Text>
             <TextInput
-              style={[styles.input, { color: theme.text, backgroundColor: theme.card, borderColor: theme.border }]}
+              style={[
+                styles.input,
+                {
+                  color: theme.text,
+                  backgroundColor: theme.card,
+                  borderColor: theme.border,
+                },
+              ]}
               placeholder="Tag1, Tag2, Tag3..."
               placeholderTextColor={theme.textTertiary}
               value={tags}
@@ -90,5 +133,11 @@ export default function EditIdeaScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   input: { padding: 14, borderRadius: 12, borderWidth: 1, marginBottom: 16 },
-  label: { fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 },
+  label: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 8,
+  },
 });

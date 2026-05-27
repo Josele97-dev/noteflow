@@ -9,9 +9,16 @@ interface Props {
   onBack: () => void;
   onSave?: () => void;
   saveLabel?: string;
+  disabled?: boolean; // 🔥 Añadido para el sistema anti‑spam
 }
 
-export function EditHeader({ title, onBack, onSave, saveLabel = 'Guardar' }: Props) {
+export function EditHeader({
+  title,
+  onBack,
+  onSave,
+  saveLabel = 'Guardar',
+  disabled = false, // valor por defecto
+}: Props) {
   const theme = useTheme();
   const scheme = useColorScheme() ?? 'light';
   const isDark = scheme === 'dark';
@@ -51,15 +58,23 @@ export function EditHeader({ title, onBack, onSave, saveLabel = 'Guardar' }: Pro
         {onSave && (
           <TouchableOpacity
             onPress={onSave}
+            disabled={disabled}
             style={{
-              backgroundColor: isDark ? theme.primary : 'rgba(255,255,255,0.2)',
+              backgroundColor: disabled
+                ? isDark
+                  ? theme.border
+                  : 'rgba(255,255,255,0.3)'
+                : isDark
+                ? theme.primary
+                : 'rgba(255,255,255,0.2)',
               paddingHorizontal: 14,
               paddingVertical: 7,
               borderRadius: 20,
+              opacity: disabled ? 0.6 : 1,
             }}
           >
             <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '600' }}>
-              {saveLabel}
+              {disabled ? 'Guardando…' : saveLabel}
             </Text>
           </TouchableOpacity>
         )}
