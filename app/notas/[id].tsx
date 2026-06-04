@@ -14,7 +14,6 @@ export default function NotaDetalle() {
   const { notes, deleteNote, archiveNote } = useNotesStore();
 
   const data = notes.find((n) => n.id === id);
-
   const [isOpening, setIsOpening] = useState(false);
 
   if (!data) return <View style={{ flex: 1, backgroundColor: theme.background }} />;
@@ -54,23 +53,52 @@ export default function NotaDetalle() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: theme.background }]}
+      accessible
+      accessibilityLabel="Pantalla de detalle de nota"
+    >
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <FadeInDown duration={400} offset={-30}>
-          <Text style={[styles.fecha, { color: theme.textTertiary }]}>{fecha}</Text>
+          <Text
+            style={[styles.fecha, { color: theme.textTertiary }]}
+            accessible
+            accessibilityRole="text"
+            accessibilityLabel={`Fecha de creación: ${fecha}`}
+          >
+            {fecha}
+          </Text>
         </FadeInDown>
 
         <FadeInDown duration={400} offset={-30} delay={100}>
-          <Text style={[styles.title, { color: theme.text }]}>{data.title}</Text>
+          <Text
+            style={[styles.title, { color: theme.text }]}
+            accessible
+            accessibilityRole="header"
+            accessibilityLabel={`Título de la nota: ${data.title}`}
+          >
+            {data.title}
+          </Text>
         </FadeInDown>
 
         <FadeInDown duration={400} offset={-30} delay={200}>
-          <View style={[styles.separador, { backgroundColor: theme.border }]} />
-          <Text style={[styles.content, { color: theme.textSecondary }]}>{data.content}</Text>
+          <View
+            style={[styles.separador, { backgroundColor: theme.border }]}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          />
+          <Text
+            style={[styles.content, { color: theme.textSecondary }]}
+            accessible
+            accessibilityRole="text"
+            accessibilityLabel={`Contenido de la nota: ${data.content}`}
+          >
+            {data.content}
+          </Text>
         </FadeInDown>
 
         {data.location && (
@@ -81,6 +109,10 @@ export default function NotaDetalle() {
                 { backgroundColor: theme.card, borderColor: theme.border },
               ]}
               activeOpacity={0.7}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={`Ubicación guardada: ${data.location.address}`}
+              accessibilityHint="Muestra la ubicación asociada a esta nota"
             >
               <Text style={styles.locationIcon}>📍</Text>
               <Text style={[styles.locationText, { color: theme.textSecondary }]}>

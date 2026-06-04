@@ -9,7 +9,7 @@ interface Props {
   onBack: () => void;
   onSave?: () => void;
   saveLabel?: string;
-  disabled?: boolean; // 🔥 Añadido para el sistema anti‑spam
+  disabled?: boolean;
 }
 
 export function EditHeader({
@@ -17,66 +17,111 @@ export function EditHeader({
   onBack,
   onSave,
   saveLabel = 'Guardar',
-  disabled = false, // valor por defecto
+  disabled = false,
 }: Props) {
   const theme = useTheme();
   const scheme = useColorScheme() ?? 'light';
   const isDark = scheme === 'dark';
   const insets = useSafeAreaInsets();
 
-  const headerBg = isDark ? theme.card : theme.primary;
-  const headerText = isDark ? theme.text : '#ffffff';
-  const iconColor = isDark ? theme.text : '#ffffff';
+  const bg = isDark ? theme.card : theme.primary;
+  const text = isDark ? theme.text : '#fff';
+  const subtle = isDark ? theme.textSecondary : 'rgba(255,255,255,0.8)';
 
   return (
     <>
-      <StatusBar style="light" backgroundColor={headerBg} translucent />
+      <StatusBar style="light" />
+
       <View
         style={{
-          backgroundColor: headerBg,
-          paddingTop: insets.top + 8,
+          backgroundColor: bg,
+          paddingTop: insets.top + 10,
           paddingBottom: 14,
           paddingHorizontal: 16,
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 12,
-          alignSelf: 'stretch',
+          justifyContent: 'space-between',
+
+          borderBottomWidth: 1,
+          borderBottomColor: isDark ? theme.border : 'rgba(255,255,255,0.15)',
         }}
       >
         <TouchableOpacity
           onPress={onBack}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          style={{ width: 32, height: 32, justifyContent: 'center', alignItems: 'center' }}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: isDark
+              ? theme.background
+              : 'rgba(255,255,255,0.15)',
+          }}
         >
-          <Ionicons name="arrow-back" size={24} color={iconColor} />
+          <Ionicons
+            name="chevron-back"
+            size={22}
+            color={text}
+          />
         </TouchableOpacity>
 
-        <Text style={{ flex: 1, fontSize: 18, fontWeight: '700', color: headerText }}>
-          {title}
-        </Text>
+        {/* CENTER TITLE */}
+        <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 10 }}>
+          <Text
+            numberOfLines={1}
+            style={{
+              fontSize: 16,
+              fontWeight: '700',
+              color: text,
+              letterSpacing: 0.2,
+            }}
+          >
+            {title}
+          </Text>
 
-        {onSave && (
+          <View
+            style={{
+              width: 28,
+              height: 2,
+              borderRadius: 2,
+              marginTop: 4,
+              backgroundColor: isDark
+                ? theme.primary
+                : 'rgba(255,255,255,0.6)',
+            }}
+          />
+        </View>
+
+        {onSave ? (
           <TouchableOpacity
             onPress={onSave}
             disabled={disabled}
             style={{
+              paddingHorizontal: 14,
+              paddingVertical: 8,
+              borderRadius: 10,
+
               backgroundColor: disabled
                 ? isDark
                   ? theme.border
-                  : 'rgba(255,255,255,0.3)'
-                : isDark
-                ? theme.primary
-                : 'rgba(255,255,255,0.2)',
-              paddingHorizontal: 14,
-              paddingVertical: 7,
-              borderRadius: 20,
-              opacity: disabled ? 0.6 : 1,
+                  : 'rgba(255,255,255,0.25)'
+                : '#fff',
             }}
           >
-            <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '600' }}>
-              {disabled ? 'Guardando…' : saveLabel}
+            <Text
+              style={{
+                fontSize: 13,
+                fontWeight: '700',
+                color: theme.primary,
+                opacity: disabled ? 0.5 : 1,
+              }}
+            >
+              {saveLabel}
             </Text>
           </TouchableOpacity>
+        ) : (
+          <View style={{ width: 40 }} />
         )}
       </View>
     </>

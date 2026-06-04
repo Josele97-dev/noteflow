@@ -13,7 +13,16 @@ export default function ChecklistsScreen() {
 
   if (!_hydrated) {
     return (
-      <View style={{ flex: 1, backgroundColor: theme.background, justifyContent: 'center', alignItems: 'center' }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: theme.background,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+        accessibilityRole="progressbar"
+        accessibilityLabel="Cargando listas de tareas"
+      >
         <ActivityIndicator color={theme.primary} />
       </View>
     );

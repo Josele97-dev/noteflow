@@ -3,7 +3,7 @@ import { EditHeader } from '@/components/ui/EditHeader';
 import { useExitAnimation } from '@/hooks/useExitAnimation';
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -37,12 +37,16 @@ export default function EditTaskScreen() {
   const [subtareas, setSubtareas] = useState<Subtarea[]>(task?.items ?? []);
   const { animStyle, exit } = useExitAnimation();
 
-  // 🔥 ANTI‑SPAM
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {}, []);
-
-  if (!task) return null;
+  if (!task)
+    return (
+      <View
+        style={{ flex: 1, backgroundColor: theme.background }}
+        accessibilityRole="text"
+        accessibilityLabel="Tarea no encontrada"
+      />
+    );
 
   const hasEmptySubtarea = subtareas.some((s) => s.text.trim().length === 0);
 
@@ -67,7 +71,7 @@ export default function EditTaskScreen() {
   };
 
   const save = async () => {
-    if (isSaving) return; // 🔥 evita doble click
+    if (isSaving) return;
     if (!title.trim()) return;
 
     setIsSaving(true);
@@ -80,12 +84,15 @@ export default function EditTaskScreen() {
       exit(router.back);
     } catch (e) {
       console.log('Error guardando:', e);
-      setIsSaving(false); // 🔥 reactivar si falla
+      setIsSaving(false);
     }
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: theme.background }]}
+      accessibilityLabel="Pantalla de edición de tarea"
+    >
       <Stack.Screen options={{ headerShown: false }} />
 
       <Animated.View style={[{ flex: 1 }, animStyle]}>
@@ -93,7 +100,7 @@ export default function EditTaskScreen() {
           title="Editar tarea"
           onBack={router.back}
           onSave={save}
-          disabled={isSaving} // 🔥 botón desactivado mientras guarda
+          disabled={isSaving}
         />
 
         <KeyboardAvoidingView
@@ -105,8 +112,16 @@ export default function EditTaskScreen() {
               padding: 16,
               paddingBottom: insets.bottom + 40,
             }}
+            accessibilityLabel="Formulario de edición de subtareas"
           >
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Título</Text>
+            {/* TÍTULO */}
+            <Text
+              style={[styles.label, { color: theme.textSecondary }]}
+              accessibilityRole="text"
+            >
+              Título
+            </Text>
+
             <TextInput
               value={title}
               onChangeText={setTitle}
@@ -116,11 +131,19 @@ export default function EditTaskScreen() {
                 styles.titleInput,
                 { color: theme.text, backgroundColor: theme.card, borderColor: theme.border },
               ]}
+              accessibilityLabel="Campo de título de la tarea"
+              accessibilityHint="Escribe el nombre de la tarea"
             />
 
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Subtareas</Text>
+            {/* SUBTAREAS */}
+            <Text
+              style={[styles.label, { color: theme.textSecondary }]}
+              accessibilityRole="text"
+            >
+              Subtareas
+            </Text>
 
-            {subtareas.map((sub) => (
+            {subtareas.map((sub, index) => (
               <FadeInDown key={sub.id}>
                 <TextInput
                   value={sub.text}
@@ -132,10 +155,14 @@ export default function EditTaskScreen() {
                     styles.input,
                     { color: theme.text, backgroundColor: theme.card, borderColor: theme.border },
                   ]}
+                  accessibilityRole="text"
+                  accessibilityLabel={`Subtarea ${index + 1}`}
+                  accessibilityHint="Escribe o edita esta subtarea"
                 />
               </FadeInDown>
             ))}
 
+            {/* BOTÓN AÑADIR */}
             <TouchableOpacity
               style={[
                 styles.addBtn,
@@ -143,6 +170,14 @@ export default function EditTaskScreen() {
               ]}
               disabled={hasEmptySubtarea}
               onPress={addSubtarea}
+              accessibilityRole="button"
+              accessibilityLabel="Añadir subtarea"
+              accessibilityHint={
+                hasEmptySubtarea
+                  ? 'Completa la subtarea actual antes de añadir otra'
+                  : 'Añade una nueva subtarea'
+              }
+              accessibilityState={{ disabled: hasEmptySubtarea }}
             >
               <Text style={{ color: theme.text }}>+ Añadir subtarea</Text>
             </TouchableOpacity>

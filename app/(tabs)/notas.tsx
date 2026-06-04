@@ -12,7 +12,16 @@ export default function NotasScreen() {
 
   if (!_hydrated) {
     return (
-      <View style={{ flex: 1, backgroundColor: theme.background, justifyContent: 'center', alignItems: 'center' }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: theme.background,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+        accessibilityRole="progressbar"
+        accessibilityLabel="Cargando notas"
+      >
         <ActivityIndicator color={theme.primary} />
       </View>
     );

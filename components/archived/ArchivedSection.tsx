@@ -5,13 +5,17 @@ import { StyleSheet, Text, View } from 'react-native';
 
 const List = FlashList as unknown as React.ComponentType<any>;
 
-interface Props {
+type Props<T> = {
   title: string;
-  data: any[];
-  renderItem: any;
-}
+  data: T[];
+  renderItem: (info: { item: T; index: number }) => React.ReactNode;
+};
 
-export default function ArchivedSection({ title, data, renderItem }: Props) {
+export default function ArchivedSection<T>({
+  title,
+  data,
+  renderItem,
+}: Props<T>) {
   const theme = useTheme();
 
   if (!data || data.length === 0) return null;
@@ -25,7 +29,7 @@ export default function ArchivedSection({ title, data, renderItem }: Props) {
       <List
         data={data}
         renderItem={renderItem}
-        estimatedItemSize={80}   
+        estimatedItemSize={80}
         keyExtractor={(item: any, index: number) =>
           item?.id ?? index.toString()
         }

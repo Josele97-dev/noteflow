@@ -13,7 +13,16 @@ export default function IdeasScreen() {
 
   if (!_hydrated) {
     return (
-      <View style={{ flex: 1, backgroundColor: theme.background, justifyContent: 'center', alignItems: 'center' }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: theme.background,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+        accessibilityLabel="Cargando ideas"
+        accessibilityRole="progressbar"
+      >
         <ActivityIndicator color={theme.primary} />
       </View>
     );

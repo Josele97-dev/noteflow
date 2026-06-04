@@ -30,31 +30,45 @@ export default function EditIdeaScreen() {
   const [tags, setTags] = useState((idea?.tags ?? []).join(', '));
   const { animStyle, exit } = useExitAnimation();
 
-  // 🔥 ANTI‑SPAM
   const [isSaving, setIsSaving] = useState(false);
 
-  if (!idea) return null;
+  if (!idea) {
+    return (
+      <View
+        style={[styles.container, { backgroundColor: theme.background }]}
+        accessibilityRole="none"
+        accessibilityLabel="Idea no encontrada"
+      />
+    );
+  }
 
   const save = async () => {
-    if (isSaving) return; // 🔥 evita doble click
+    if (isSaving) return;
     if (!title.trim()) return;
 
     setIsSaving(true);
 
     try {
-      const tagsArray = tags.split(',').map((t) => t.trim()).filter(Boolean);
+      const tagsArray = tags
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
+
       updateIdea(idea.id, { title, content, tags: tagsArray });
 
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       exit(router.back);
     } catch (e) {
       console.log('Error guardando:', e);
-      setIsSaving(false); // 🔥 reactivar si falla
+      setIsSaving(false);
     }
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: theme.background }]}
+      accessibilityLabel="Pantalla de edición de idea"
+    >
       <Stack.Screen options={{ headerShown: false }} />
 
       <Animated.View style={[{ flex: 1 }, animStyle]}>
@@ -62,7 +76,7 @@ export default function EditIdeaScreen() {
           title="Editar idea"
           onBack={router.back}
           onSave={save}
-          disabled={isSaving} // 🔥 botón desactivado mientras guarda
+          disabled={isSaving}
         />
 
         <KeyboardAvoidingView
@@ -70,8 +84,12 @@ export default function EditIdeaScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <ScrollView
-            contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 40 }}
+            contentContainerStyle={{
+              padding: 16,
+              paddingBottom: insets.bottom + 40,
+            }}
             showsVerticalScrollIndicator={false}
+            accessibilityLabel="Formulario de edición de idea"
           >
             <TextInput
               style={[
@@ -88,6 +106,8 @@ export default function EditIdeaScreen() {
               placeholderTextColor={theme.textTertiary}
               value={title}
               onChangeText={setTitle}
+              accessibilityLabel="Campo de título"
+              accessibilityRole="text"
             />
 
             <TextInput
@@ -106,9 +126,18 @@ export default function EditIdeaScreen() {
               value={content}
               onChangeText={setContent}
               multiline
+              accessibilityLabel="Campo de contenido"
+              accessibilityRole="text"
             />
 
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Tags</Text>
+            <Text
+              style={[styles.label, { color: theme.textSecondary }]}
+              accessibilityRole="text"
+              accessibilityLabel="Etiqueta de tags"
+            >
+              Tags
+            </Text>
+
             <TextInput
               style={[
                 styles.input,
@@ -122,6 +151,8 @@ export default function EditIdeaScreen() {
               placeholderTextColor={theme.textTertiary}
               value={tags}
               onChangeText={setTags}
+              accessibilityLabel="Campo de etiquetas separadas por comas"
+              accessibilityRole="text"
             />
           </ScrollView>
         </KeyboardAvoidingView>

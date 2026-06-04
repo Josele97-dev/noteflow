@@ -30,7 +30,7 @@ export default function TabsLayout() {
   const isDark = scheme === 'dark';
 
   const theme = useTheme();
-  const { card, text, border, primary, textTertiary, primarySubtle } = theme;
+  const { card, text, border, primary, textTertiary } = theme;
 
   const currentTab = TABS.find((t) => pathname.includes(t.name));
 
@@ -65,7 +65,11 @@ export default function TabsLayout() {
   const avatarTextColor = isDark ? primary : '#ffffff';
 
   return (
-    <View style={{ flex: 1 }}>
+    <View
+      style={{ flex: 1 }}
+      accessibilityRole="tablist"
+      accessibilityLabel="Navegación principal"
+    >
       <Tabs
         screenOptions={{
           headerStyle: { backgroundColor: headerBg },
@@ -92,11 +96,14 @@ export default function TabsLayout() {
                 justifyContent: 'center',
                 alignItems: 'center',
               }}
+              accessibilityRole="button"
+              accessibilityLabel="Abrir perfil"
             >
               {avatar ? (
                 <Image
                   source={{ uri: avatar }}
                   style={{ width: '100%', height: '100%' }}
+                  accessibilityLabel="Foto de perfil"
                 />
               ) : (
                 <Text
@@ -105,6 +112,7 @@ export default function TabsLayout() {
                     fontWeight: '700',
                     fontSize: 15,
                   }}
+                  accessibilityRole="text"
                 >
                   {initial}
                 </Text>
@@ -119,14 +127,22 @@ export default function TabsLayout() {
             name={name}
             options={{
               title,
+              tabBarAccessibilityLabel: `Ir a ${title}`,
               tabBarIcon: ({ color, size }) => (
-                <Ionicons name={icon} size={size} color={color} />
+                <Ionicons
+                  name={icon}
+                  size={size}
+                  color={color}
+                  accessibilityRole="image"
+                  accessibilityLabel={`Icono de ${title}`}
+                />
               ),
             }}
           />
         ))}
       </Tabs>
 
+      {/* BOTÓN FLOTANTE + ACCESIBLE */}
       {currentTab?.tipo && (
         <TouchableOpacity
           onPress={() => router.push(`/crear?tipo=${currentTab.tipo}` as any)}
@@ -147,8 +163,17 @@ export default function TabsLayout() {
             shadowRadius: 4,
             elevation: 6,
           }}
+          accessibilityRole="button"
+          accessibilityLabel={`Crear nueva ${currentTab.tipo}`}
+          accessibilityHint="Abre la pantalla para añadir una nueva entrada"
         >
-          <Ionicons name="add" size={32} color="white" />
+          <Ionicons
+            name="add"
+            size={32}
+            color="white"
+            accessibilityRole="image"
+            accessibilityLabel="Icono de añadir"
+          />
         </TouchableOpacity>
       )}
     </View>

@@ -17,7 +17,14 @@ export default function ChecklistDetalle() {
 
   const [isOpening, setIsOpening] = useState(false);
 
-  if (!data) return <View style={{ flex: 1, backgroundColor: theme.background }} />;
+  if (!data)
+    return (
+      <View
+        style={{ flex: 1, backgroundColor: theme.background }}
+        accessibilityRole="text"
+        accessibilityLabel="No se encontró la lista"
+      />
+    );
 
   const fecha = new Date(data.createdAt).toLocaleDateString('es-ES', {
     day: 'numeric',
@@ -47,17 +54,16 @@ export default function ChecklistDetalle() {
     });
 
   const editar = () => {
-  if (isOpening) return;
-  setIsOpening(true);
+    if (isOpening) return;
+    setIsOpening(true);
 
-  router.push({
-    pathname: '/checklists/editar/EditTaskScreen',
-    params: { id },
-  });
+    router.push({
+      pathname: '/checklists/editar/EditTaskScreen',
+      params: { id },
+    });
 
-  setTimeout(() => setIsOpening(false), 600);
-};
-
+    setTimeout(() => setIsOpening(false), 600);
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -65,46 +71,68 @@ export default function ChecklistDetalle() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        accessibilityLabel="Detalle de checklist"
       >
         <FadeInDown duration={400} offset={-30}>
-          <Text style={[styles.fecha, { color: theme.textTertiary }]}>{fecha}</Text>
+          <Text
+            style={[styles.fecha, { color: theme.textTertiary }]}
+            accessibilityRole="text"
+            accessibilityLabel={`Fecha de creación ${fecha}`}
+          >
+            {fecha}
+          </Text>
         </FadeInDown>
 
         <FadeInDown duration={400} offset={-30} delay={100}>
-          <Text style={[styles.title, { color: theme.text }]}>{data.title}</Text>
+          <Text
+            style={[styles.title, { color: theme.text }]}
+            accessibilityRole="header"
+            accessibilityLabel={`Título de la lista: ${data.title}`}
+          >
+            {data.title}
+          </Text>
         </FadeInDown>
 
         <FadeInDown duration={400} offset={-30} delay={200}>
           <View style={styles.itemsContainer}>
-            {data.items.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.itemRow}
-                onPress={() => toggleChecklistItem(data.id, item.id)}
-                activeOpacity={0.7}
-              >
-                <View
-                  style={[
-                    styles.checkbox,
-                    {
-                      borderColor: theme.border,
-                      backgroundColor: item.isCompleted ? theme.primary : 'transparent',
-                    },
-                  ]}
-                />
-                <Text
-                  style={[
-                    styles.itemText,
-                    {
-                      color: theme.textSecondary,
-                      textDecorationLine: item.isCompleted ? 'line-through' : 'none',
-                    },
-                  ]}
+            {data.items.map((item) => {
+              const label = `${item.text}, ${item.isCompleted ? 'completado' : 'pendiente'}`;
+
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.itemRow}
+                  onPress={() => toggleChecklistItem(data.id, item.id)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={label}
+                  accessibilityHint="Marca o desmarca esta tarea"
+                  accessibilityState={{ checked: item.isCompleted }}
                 >
-                  {item.text}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <View
+                    style={[
+                      styles.checkbox,
+                      {
+                        borderColor: theme.border,
+                        backgroundColor: item.isCompleted ? theme.primary : 'transparent',
+                      },
+                    ]}
+                  />
+
+                  <Text
+                    style={[
+                      styles.itemText,
+                      {
+                        color: theme.textSecondary,
+                        textDecorationLine: item.isCompleted ? 'line-through' : 'none',
+                      },
+                    ]}
+                  >
+                    {item.text}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </FadeInDown>
 
@@ -116,6 +144,9 @@ export default function ChecklistDetalle() {
                 { backgroundColor: theme.card, borderColor: theme.border },
               ]}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Ubicación: ${data.location.address}`}
+              accessibilityHint="Información de ubicación asociada a esta lista"
             >
               <Text style={styles.locationIcon}>📍</Text>
               <Text style={[styles.locationText, { color: theme.textSecondary }]}>

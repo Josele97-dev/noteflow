@@ -29,13 +29,12 @@ export default function EditNoteScreen() {
   const [content, setContent] = useState(note?.content ?? '');
   const { animStyle, exit } = useExitAnimation();
 
-  // 🔥 ANTI‑SPAM
   const [isSaving, setIsSaving] = useState(false);
 
   if (!note) return null;
 
   const save = async () => {
-    if (isSaving) return; // 🔥 evita doble click
+    if (isSaving) return;
     if (!title.trim()) return;
 
     setIsSaving(true);
@@ -46,12 +45,16 @@ export default function EditNoteScreen() {
       exit(router.back);
     } catch (e) {
       console.log('Error guardando:', e);
-      setIsSaving(false); // 🔥 reactivar si falla
+      setIsSaving(false);
     }
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: theme.background }]}
+      accessible
+      accessibilityLabel="Pantalla de edición de nota"
+    >
       <Stack.Screen options={{ headerShown: false }} />
 
       <Animated.View style={[{ flex: 1 }, animStyle]}>
@@ -59,7 +62,7 @@ export default function EditNoteScreen() {
           title="Editar nota"
           onBack={router.back}
           onSave={save}
-          disabled={isSaving} 
+          disabled={isSaving}
         />
 
         <KeyboardAvoidingView
@@ -67,8 +70,13 @@ export default function EditNoteScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <ScrollView
-            contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 40 }}
+            contentContainerStyle={{
+              padding: 16,
+              paddingBottom: insets.bottom + 40,
+            }}
             showsVerticalScrollIndicator={false}
+            accessible
+            accessibilityLabel="Formulario de edición de nota"
           >
             <FadeInDown duration={300} offset={-20} delay={80}>
               <TextInput
@@ -86,6 +94,9 @@ export default function EditNoteScreen() {
                 placeholderTextColor={theme.textTertiary}
                 value={title}
                 onChangeText={setTitle}
+                accessible
+                accessibilityLabel="Título de la nota"
+                accessibilityHint="Edita el título"
               />
             </FadeInDown>
 
@@ -106,6 +117,9 @@ export default function EditNoteScreen() {
                 value={content}
                 onChangeText={setContent}
                 multiline
+                accessible
+                accessibilityLabel="Contenido de la nota"
+                accessibilityHint="Edita el contenido"
               />
             </FadeInDown>
           </ScrollView>

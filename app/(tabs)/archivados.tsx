@@ -76,7 +76,11 @@ export default function ArchivadosScreen() {
 
   if (!_hydrated) {
     return (
-      <View style={[styles.container, styles.center, { backgroundColor: theme.background }]}>
+      <View
+        style={[styles.container, styles.center, { backgroundColor: theme.background }]}
+        accessibilityRole="text"
+        accessibilityLabel="Cargando elementos archivados"
+      >
         <ActivityIndicator color={theme.primary} />
       </View>
     );
@@ -186,12 +190,25 @@ export default function ArchivadosScreen() {
     };
 
     return (
-      <View style={[styles.card, { backgroundColor: item.color || theme.card }]}>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: item.color || theme.card,
+            borderWidth: 1,               
+            borderColor: theme.border,     
+          },
+        ]}
+        accessibilityRole="button"
+        accessibilityLabel={`Elemento archivado: ${item.title}. ${item.subtitle}`}
+      >
         <Feather
           name={item.icon}
           size={18}
           color={s.iconColor}
           style={{ marginRight: 12 }}
+          accessibilityRole="image"
+          accessibilityLabel={`Icono de ${item.type}`}
         />
 
         <View style={{ flex: 1 }}>
@@ -200,7 +217,10 @@ export default function ArchivadosScreen() {
           </Text>
 
           {!!item.subtitle && (
-            <Text numberOfLines={1} style={[styles.cardSub, { color: s.textSecondary }]}>
+            <Text
+              numberOfLines={1}
+              style={[styles.cardSub, { color: s.textSecondary }]}
+            >
               {item.subtitle}
             </Text>
           )}
@@ -228,10 +248,7 @@ export default function ArchivadosScreen() {
 
   const renderItem = ({ item }: { item: ArchivedItem }) =>
     saliendoId === item.id ? (
-      <FadeOutLeft
-        duration={250}
-        onFinish={() => onFinish(item.id, item.type)}
-      >
+      <FadeOutLeft duration={250} onFinish={() => onFinish(item.id, item.type)}>
         {renderCard(item)}
       </FadeOutLeft>
     ) : (
@@ -282,11 +299,7 @@ export default function ArchivadosScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-
-  center: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  center: { justifyContent: 'center', alignItems: 'center' },
 
   search: {
     flexDirection: 'row',
@@ -303,12 +316,7 @@ const styles = StyleSheet.create({
   },
 
   empty: { flex: 1 },
-
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-
+  emptyText: { fontSize: 18, fontWeight: '600' },
   emptySubtext: {
     fontSize: 14,
     marginTop: 8,

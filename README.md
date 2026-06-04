@@ -120,7 +120,7 @@ La app consume una API REST propia desplegada en Vercel: https://noteflow-api.ve
 
 ---
 
-## Estructura del proyecto
+## Estructura general del proyecto
 
 ```bash
 app/
@@ -191,12 +191,27 @@ lib/
 store/
   notesStore.ts
 
+tests/
+  screens/
+    checklists.test.tsx
+    ideas.test.tsx
+    notas.test.tsx
+  store/
+    notesStore.test.ts
+
 types/
   index.ts
 
 utils/
   ideaColors.ts
 ```
+
+---
+
+## Accesibilidad
+
+Se ha mejorado la accesibilidad general de la aplicación para compatibilidad con lectores de pantalla (TalkBack en Android / VoiceOver en iOS).  
+Se añadieron etiquetas semánticas y descripciones a botones, inputs e interacciones clave para mejorar la navegación por voz y la comprensión de la interfaz.
 
 ---
 
@@ -239,7 +254,7 @@ https://trello.com/b/I1L4Exy8/noteflow
 ## Instalación
 
 ```bash
-git clone https://github.com/TU_ENLACE/noteflow.git
+git clone https://github.com/Josele97-dev/noteflow.git
 cd noteflow
 npm install
 npx expo start

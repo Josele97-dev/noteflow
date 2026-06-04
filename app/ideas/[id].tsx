@@ -16,7 +16,15 @@ export default function IdeaDetalle() {
   const data = ideas.find((i) => i.id === id);
   const [isOpening, setIsOpening] = useState(false);
 
-  if (!data) return <View style={{ flex: 1, backgroundColor: theme.background }} />;
+  if (!data) {
+    return (
+      <View
+        style={[styles.container, { backgroundColor: theme.background }]}
+        accessibilityLabel="Idea no encontrada"
+        accessibilityRole="none"
+      />
+    );
+  }
 
   const fecha = new Date(data.createdAt).toLocaleDateString('es-ES', {
     day: 'numeric',
@@ -53,28 +61,60 @@ export default function IdeaDetalle() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: data.color }]}>
+    <View
+      style={[styles.container, { backgroundColor: data.color }]}
+      accessibilityLabel={`Detalle de idea ${data.title}`}
+    >
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        accessibilityLabel="Contenido de la idea"
       >
-        {/* Overlay blanco */}
-        <View style={[styles.overlay]}>
+        <View
+          style={[
+            styles.overlay,
+            {
+              backgroundColor: theme.card,
+            },
+          ]}
+        >
           <FadeInDown duration={400} offset={-30}>
-            <Text style={[styles.fecha, { color: theme.textTertiary }]}>{fecha}</Text>
+            <Text
+              style={[styles.fecha, { color: theme.textTertiary }]}
+              accessibilityRole="text"
+              accessibilityLabel={`Fecha de creación ${fecha}`}
+            >
+              {fecha}
+            </Text>
           </FadeInDown>
 
           <FadeInDown duration={400} offset={-30} delay={100}>
-            <Text style={styles.title}>{data.title}</Text>
+            <Text
+              style={[styles.title, { color: theme.text }]}
+              accessibilityRole="header"
+              accessibilityLabel={`Título ${data.title}`}
+            >
+              {data.title}
+            </Text>
           </FadeInDown>
 
           {data.tags.length > 0 && (
             <FadeInDown duration={400} offset={-30} delay={150}>
-              <View style={styles.tags}>
+              <View
+                style={styles.tags}
+                accessibilityLabel={`Etiquetas ${data.tags.join(', ')}`}
+              >
                 {data.tags.map((tag, i) => (
-                  <View key={i} style={[styles.tag, { backgroundColor: theme.primary + '22' }]}>
-                    <Text style={[styles.tagText, { color: theme.primary }]}>#{tag}</Text>
+                  <View
+                    key={i}
+                    style={[styles.tag, { backgroundColor: theme.primary + '22' }]}
+                    accessibilityRole="text"
+                    accessibilityLabel={`Etiqueta ${tag}`}
+                  >
+                    <Text style={[styles.tagText, { color: theme.primary }]}>
+                      #{tag}
+                    </Text>
                   </View>
                 ))}
               </View>
@@ -83,7 +123,13 @@ export default function IdeaDetalle() {
 
           {data.content && (
             <FadeInDown duration={400} offset={-30} delay={250}>
-              <Text style={styles.content}>{data.content}</Text>
+              <Text
+                style={[styles.content, { color: theme.textSecondary }]}
+                accessibilityRole="text"
+                accessibilityLabel={`Contenido ${data.content}`}
+              >
+                {data.content}
+              </Text>
             </FadeInDown>
           )}
 
@@ -92,12 +138,25 @@ export default function IdeaDetalle() {
               <TouchableOpacity
                 style={[
                   styles.locationRow,
-                  { backgroundColor: theme.card, borderColor: theme.border },
+                  {
+                    backgroundColor: theme.background,
+                    borderColor: theme.border,
+                  },
                 ]}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`Ubicación ${data.location.address}`}
               >
-                <Text style={styles.locationIcon}>📍</Text>
-                <Text style={[styles.locationText, { color: theme.textSecondary }]}>
+                <Text
+                  style={styles.locationIcon}
+                  accessibilityLabel="Icono de ubicación"
+                >
+                  📍
+                </Text>
+
+                <Text
+                  style={[styles.locationText, { color: theme.textSecondary }]}
+                >
                   {data.location.address}
                 </Text>
               </TouchableOpacity>
@@ -124,20 +183,47 @@ const styles = StyleSheet.create({
   scrollContent: { padding: 24, paddingBottom: 40 },
 
   overlay: {
-    backgroundColor: 'rgba(255,255,255,0.85)',
     borderRadius: 16,
     padding: 16,
   },
 
-  fecha: { fontSize: 13, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
+  fecha: {
+    fontSize: 13,
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
 
-  title: { fontSize: 28, fontWeight: '700', marginBottom: 16, lineHeight: 34, color: '#000' },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 16,
+    lineHeight: 34,
+  },
 
-  tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
-  tag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  tagText: { fontSize: 13, fontWeight: '600' },
+  tags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
 
-  content: { fontSize: 16, lineHeight: 26, marginBottom: 20, color: '#000' },
+  tag: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+
+  tagText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+
+  content: {
+    fontSize: 16,
+    lineHeight: 26,
+    marginBottom: 20,
+  },
 
   locationRow: {
     flexDirection: 'row',
@@ -148,6 +234,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  locationIcon: { fontSize: 16 },
-  locationText: { fontSize: 13, flex: 1 },
+
+  locationIcon: {
+    fontSize: 16,
+  },
+
+  locationText: {
+    fontSize: 13,
+    flex: 1,
+  },
 });

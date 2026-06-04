@@ -8,10 +8,10 @@ type Props = {
   onArchivar: () => void;
   onEliminar: () => void;
   isOpening?: boolean;
-  variant?: 'theme' | 'color';   
+  variant?: 'theme' | 'color';
 };
 
-export function ItemActions ({
+export function ItemActions({
   onEditar,
   onArchivar,
   onEliminar,
@@ -42,7 +42,10 @@ export function ItemActions ({
           backgroundColor: isColor ? 'transparent' : theme.background,
         },
       ]}
+      accessibilityRole="toolbar"
+      accessibilityLabel="Acciones del elemento"
     >
+      {/* EDITAR */}
       <TouchableOpacity
         disabled={isOpening}
         style={[styles.btn, isOpening ? btnDisabled : btnBase]}
@@ -50,28 +53,48 @@ export function ItemActions ({
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           onEditar();
         }}
+        accessibilityRole="button"
+        accessibilityLabel="Editar elemento"
+        accessibilityHint="Abre la pantalla de edición"
+        accessibilityState={{ disabled: isOpening }}
       >
         <Text style={[styles.btnText, { color: textColor }]}>Editar</Text>
       </TouchableOpacity>
 
+      {/* ARCHIVAR */}
       <TouchableOpacity
         style={[styles.btn, btnBase]}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           onArchivar();
         }}
+        accessibilityRole="button"
+        accessibilityLabel="Archivar elemento"
+        accessibilityHint="Mueve este elemento a la sección de archivados"
       >
         <Text style={[styles.btnText, { color: textColor }]}>Archivar</Text>
       </TouchableOpacity>
 
+      {/* ELIMINAR */}
       <TouchableOpacity
-        style={[styles.btn, { backgroundColor: isColor ? '#ff4444' : theme.danger }]}
+        style={[
+          styles.btn,
+          { backgroundColor: isColor ? '#ff4444' : theme.danger },
+        ]}
         onPress={() => {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          Haptics.notificationAsync(
+            Haptics.NotificationFeedbackType.Warning
+          );
           onEliminar();
         }}
+        accessibilityRole="button"
+        accessibilityLabel="Eliminar elemento"
+        accessibilityHint="Elimina este elemento de forma permanente"
+        accessibilityState={{ disabled: false }}
       >
-        <Text style={[styles.btnText, { color: '#fff' }]}>Eliminar</Text>
+        <Text style={[styles.btnText, { color: '#fff' }]}>
+          Eliminar
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -93,5 +116,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'transparent',
   },
-  btnText: { fontWeight: '600', fontSize: 15 },
+  btnText: {
+    fontWeight: '600',
+    fontSize: 15,
+  },
 });

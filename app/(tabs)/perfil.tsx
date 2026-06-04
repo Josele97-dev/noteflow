@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   StyleSheet,
   Text,
@@ -15,10 +16,16 @@ import { useTheme } from '../../constants/theme';
 
 const API_URL = 'https://noteflow-api.vercel.app/api';
 
+type Profile = {
+  name?: string;
+  avatarUrl?: string;
+};
+
 export default function PerfilScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const [profile, setProfile] = useState<any>(null);
+
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
 
@@ -26,15 +33,17 @@ export default function PerfilScreen() {
 
   useEffect(() => {
     if (!user) return;
+
     const unsubscribe = firestore()
       .collection('users')
       .doc(user.uid)
       .onSnapshot((doc) => {
-        setProfile(doc.data());
+        setProfile(doc.data() as Profile);
         setLoading(false);
       });
+
     return unsubscribe;
-  }, []);
+  }, [user]);
 
   const logout = async () => {
     await auth().signOut();
@@ -42,92 +51,149 @@ export default function PerfilScreen() {
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
     if (status !== 'granted') {
-      alert('Necesitamos permisos para acceder a tu galería');
+      Alert.alert('Permiso requerido', 'Necesitamos acceso a tu galería');
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
     });
 
-    if (!result.canceled) {
-      setUploading(true);
-      try {
-        const uri = result.assets[0].uri;
-        const fileName = uri.split('/').pop() ?? 'avatar.jpg';
-        const fileType = 'image/jpeg';
+    if (result.canceled) return;
+    if (!user) return;
 
-        const token = await user!.getIdToken();
-        const res = await fetch(`${API_URL}/upload`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ fileName, fileType }),
-        });
-        const { signedUrl, publicUrl } = await res.json();
+    setUploading(true);
 
-        const imageRes = await fetch(uri);
-        const blob = await imageRes.blob();
+    try {
+      const uri = result.assets[0].uri;
+      const fileName = uri.split('/').pop() ?? 'avatar.jpg';
 
-        await fetch(signedUrl, {
-          method: 'PUT',
-          body: blob,
-          headers: { 'Content-Type': fileType },
-        });
+      const token = await user.getIdToken();
 
-        await firestore().collection('users').doc(user!.uid).update({
-          avatarUrl: publicUrl,
-        });
-      } catch (e) {
-        alert('Error al subir la imagen');
-      } finally {
-        setUploading(false);
-      }
+      const res = await fetch(`${API_URL}/upload`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          fileName,
+          fileType: 'image/jpeg',
+        }),
+      });
+
+      const { signedUrl, publicUrl } = await res.json();
+
+      const imageRes = await fetch(uri);
+      const blob = await imageRes.blob();
+
+      await fetch(signedUrl, {
+        method: 'PUT',
+        body: blob,
+        headers: { 'Content-Type': 'image/jpeg' },
+      });
+
+      await firestore().collection('users').doc(user.uid).update({
+        avatarUrl: publicUrl,
+      });
+    } catch (e) {
+      Alert.alert('Error', 'No se pudo subir la imagen');
+    } finally {
+      setUploading(false);
     }
   };
 
   if (loading) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.background, justifyContent: 'center', alignItems: 'center' }]}>
+      <View
+        style={[
+          styles.container,
+          styles.center,
+          { backgroundColor: theme.background },
+        ]}
+      >
         <ActivityIndicator color={theme.primary} />
       </View>
     );
   }
 
-  return (
-    <View style={[styles.container, { backgroundColor: theme.background, paddingTop: insets.top + 40 }]}>
+  const initial =
+    profile?.name?.charAt(0).toUpperCase() ??
+    user?.email?.charAt(0).toUpperCase() ??
+    '?';
 
-      <View style={[styles.avatarBlock, { backgroundColor: theme.card, borderColor: theme.border }]}>
-        <TouchableOpacity onPress={pickImage} disabled={uploading} style={styles.avatarWrapper}>
-          
+  return (
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.background,
+          paddingTop: insets.top + 40,
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.avatarBlock,
+          {
+            backgroundColor: theme.card,
+            borderColor: theme.border,
+          },
+        ]}
+      >
+        <TouchableOpacity
+          onPress={pickImage}
+          disabled={uploading}
+          style={styles.avatarWrapper}
+          activeOpacity={0.85}
+        >
           <View style={[styles.avatarBorder, { borderColor: theme.primary }]}>
             {profile?.avatarUrl ? (
               <Image source={{ uri: profile.avatarUrl }} style={styles.avatar} />
             ) : (
-              <View style={[styles.avatar, { backgroundColor: theme.primary + '55', justifyContent: 'center', alignItems: 'center' }]}>
-                <Text style={styles.avatarText}>
-                  {profile?.name?.charAt(0).toUpperCase() ?? user?.email?.charAt(0).toUpperCase()}
-                </Text>
+              <View
+                style={[
+                  styles.avatar,
+                  {
+                    backgroundColor: theme.primary + '55',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  },
+                ]}
+              >
+                <Text style={styles.avatarText}>{initial}</Text>
               </View>
             )}
           </View>
 
-          <View style={[styles.changePhotoBtn, { backgroundColor: theme.primary + '15' }]}>
-            <Text style={[styles.changePhotoText, { color: theme.primary }]}>
+          <View
+            style={[
+              styles.changePhotoBtn,
+              { backgroundColor: theme.primary + '15' },
+            ]}
+          >
+            <Text
+              style={[styles.changePhotoText, { color: theme.primary }]}
+            >
               {uploading ? 'Subiendo...' : 'Cambiar foto'}
             </Text>
           </View>
-
         </TouchableOpacity>
       </View>
 
-      <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: theme.card,
+            borderColor: theme.border,
+          },
+        ]}
+      >
         <Text style={[styles.name, { color: theme.text }]}>
           {profile?.name ?? 'Sin nombre'}
         </Text>
@@ -144,13 +210,17 @@ export default function PerfilScreen() {
           <Text style={styles.btnText}>Cerrar sesión</Text>
         </TouchableOpacity>
       </View>
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 24 },
+
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 
   avatarBlock: {
     width: '100%',
@@ -160,6 +230,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: 'center',
     marginBottom: 30,
+
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 3,
   },
 
   avatarWrapper: {
@@ -199,12 +274,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
+  /* INFO CARD */
   card: {
     borderWidth: 1,
     borderRadius: 28,
     padding: 28,
     alignItems: 'center',
     width: '100%',
+
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
 
   name: {

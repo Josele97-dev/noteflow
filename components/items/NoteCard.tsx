@@ -1,21 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-
-import Animated, {
-  Easing,
-  FadeInDown,
-  FadeOutLeft,
-} from 'react-native-reanimated';
-
+import Animated, { Easing, FadeInDown, FadeOutLeft } from 'react-native-reanimated';
 import { useTheme } from '../../constants/theme';
 import { Note } from '../../types';
 
@@ -26,162 +13,80 @@ interface Props {
   index?: number;
 }
 
-export default function NoteCard({
-  note,
-  onPress,
-  onDelete,
-  index = 0,
-}: Props) {
+export default function NoteCard({ note, onPress, onDelete, index = 0 }: Props) {
   const theme = useTheme();
+  const [removing, setRemoving] = useState(false);
 
-  const [removing, setRemoving] =
-    useState(false);
-
-  const fecha = new Date(
-    note.createdAt
-  ).toLocaleDateString('es-ES');
+  const fecha = new Date(note.createdAt).toLocaleDateString('es-ES');
 
   useEffect(() => {
     if (!removing) return;
-
-    const timeout = setTimeout(() => {
-      onDelete?.();
-    }, 200);
-
+    const timeout = setTimeout(() => onDelete?.(), 200);
     return () => clearTimeout(timeout);
   }, [removing]);
 
-  const renderRightActions = () => {
-    return (
-      <View
-        style={[
-          styles.deleteContainer,
-          {
-            backgroundColor: theme.danger,
-          },
-        ]}
-      >
-        <Ionicons
-          name="trash-outline"
-          size={24}
-          color="#fff"
-        />
-      </View>
-    );
-  };
+  const renderRightActions = () => (
+    <View style={[styles.deleteContainer, { backgroundColor: theme.danger }]}>
+      <Ionicons name="trash-outline" size={22} color="#fff" />
+    </View>
+  );
 
   return (
     <Animated.View
-      entering={FadeInDown.delay(
-        index * 40
-      ).springify()}
-      exiting={FadeOutLeft.duration(200).easing(
-        Easing.out(Easing.cubic)
-      )}
-      style={[
-        removing && {
-          opacity: 0.95,
-        },
-      ]}
+      entering={FadeInDown.delay(index * 40).springify()}
+      exiting={FadeOutLeft.duration(200).easing(Easing.out(Easing.cubic))}
+      style={removing ? { opacity: 0.9 } : undefined}
     >
       <Swipeable
         enabled={!removing}
-        friction={1.7}
-        rightThreshold={28}
+        friction={1.8}
+        rightThreshold={30}
         overshootRight={false}
-        dragOffsetFromRightEdge={1}
-        renderRightActions={
-          renderRightActions
-        }
-        onSwipeableWillOpen={() => {
-          setRemoving(true);
-        }}
+        renderRightActions={renderRightActions}
+        onSwipeableWillOpen={() => setRemoving(true)}
       >
         <TouchableOpacity
-          activeOpacity={0.85}
-          disabled={removing}
           onPress={onPress}
+          activeOpacity={0.88}
+          disabled={removing}
           style={[
             styles.card,
             {
-              backgroundColor:
-                theme.card,
-              borderColor:
-                theme.border,
+              backgroundColor: theme.card,
+              borderColor: theme.border,
             },
           ]}
         >
-          <View style={styles.row}>
-            <Ionicons
-              name="document-text-outline"
-              size={22}
-              color={theme.primary}
-              style={styles.noteIcon}
-            />
-
-            <View
-              style={
-                styles.contentContainer
-              }
-            >
-              <Text
-                numberOfLines={1}
-                style={[
-                  styles.title,
-                  {
-                    color: theme.text,
-                  },
-                ]}
-              >
-                {note.title}
-              </Text>
-
-              <Text
-                numberOfLines={2}
-                style={[
-                  styles.content,
-                  {
-                    color:
-                      theme.textSecondary,
-                  },
-                ]}
-              >
-                {note.content}
-              </Text>
-
-              <View style={styles.footer}>
-                <Text
-                  style={[
-                    styles.date,
-                    {
-                      color:
-                        theme.textTertiary,
-                    },
-                  ]}
-                >
-                  {fecha}
-                </Text>
-
-                {note.location && (
-                  <Text
-                    numberOfLines={1}
-                    style={[
-                      styles.location,
-                      {
-                        color:
-                          theme.textTertiary,
-                      },
-                    ]}
-                  >
-                    📍{' '}
-                    {
-                      note.location
-                        .address
-                    }
-                  </Text>
-                )}
-              </View>
+          {/* HEADER */}
+          <View style={styles.header}>
+            <View style={[styles.iconBadge, { backgroundColor: theme.primary + '15' }]}>
+              <Ionicons name="document-text-outline" size={18} color={theme.primary} />
             </View>
+
+            <Text numberOfLines={1} style={[styles.title, { color: theme.text }]}>
+              {note.title}
+            </Text>
+          </View>
+
+          {/* CONTENT */}
+          <Text numberOfLines={2} style={[styles.content, { color: theme.textSecondary }]}>
+            {note.content}
+          </Text>
+
+          {/* FOOTER */}
+          <View style={styles.footer}>
+            <Text style={[styles.date, { color: theme.textTertiary }]}>
+              {fecha}
+            </Text>
+
+            {note.location && (
+              <View style={[styles.locationPill, { backgroundColor: theme.border + '40' }]}>
+                <Ionicons name="location-outline" size={12} color={theme.textTertiary} />
+                <Text numberOfLines={1} style={[styles.locationText, { color: theme.textTertiary }]}>
+                  {note.location.address}
+                </Text>
+              </View>
+            )}
           </View>
         </TouchableOpacity>
       </Swipeable>
@@ -191,56 +96,43 @@ export default function NoteCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
-    padding: 16,
-
+    borderRadius: 16,
+    padding: 14,
     marginHorizontal: 16,
     marginVertical: 8,
-
     borderWidth: 1,
-
     shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-
-    elevation: 3,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
 
-  deleteContainer: {
-    marginVertical: 8,
-    marginRight: 16,
-
-    borderRadius: 12,
-
-    justifyContent: 'center',
-    alignItems: 'center',
-
-    width: 80,
-  },
-
-  row: {
+  header: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-
-  noteIcon: {
-    marginRight: 10,
-    marginTop: 2,
-  },
-
-  contentContainer: {
-    flex: 1,
-  },
-
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
+    alignItems: 'center',
     marginBottom: 6,
   },
 
+  iconBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+
+  title: {
+    fontSize: 15,
+    fontWeight: '700',
+    flex: 1,
+  },
+
   content: {
-    fontSize: 14,
-    marginBottom: 8,
+    fontSize: 13.5,
+    lineHeight: 18,
+    marginBottom: 10,
   },
 
   footer: {
@@ -250,13 +142,29 @@ const styles = StyleSheet.create({
   },
 
   date: {
-    fontSize: 12,
+    fontSize: 11.5,
   },
 
-  location: {
+  locationPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    maxWidth: '65%',
+  },
+
+  locationText: {
     fontSize: 11,
-    flex: 1,
-    textAlign: 'right',
-    marginLeft: 8,
+  },
+
+  deleteContainer: {
+    marginVertical: 8,
+    marginRight: 16,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 78,
   },
 });
