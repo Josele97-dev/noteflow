@@ -3,14 +3,8 @@ import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+  ActivityIndicator, Alert, ScrollView, StyleSheet,
+  Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { FadeOutLeft } from '../../components/animations/FadeOutLeft';
 import { useTheme } from '../../constants/theme';
@@ -18,48 +12,26 @@ import { useNotesStore } from '../../store/notesStore';
 
 function isColorLight(hex?: string) {
   if (!hex) return true;
-
-  const c = hex.replace('#', '');
-  const rgb = parseInt(c, 16);
-  const r = (rgb >> 16) & 255;
-  const g = (rgb >> 8) & 255;
-  const b = rgb & 255;
-
-  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-  return luminance > 160;
+  const rgb = parseInt(hex.replace('#', ''), 16);
+  return (0.299 * ((rgb >> 16) & 255) + 0.587 * ((rgb >> 8) & 255) + 0.114 * (rgb & 255)) > 160;
 }
 
 type ItemType = 'nota' | 'tarea' | 'idea';
-
 type ArchivedItem = {
-  id: string;
-  title: string;
-  subtitle: string;
+  id: string; title: string; subtitle: string;
   icon: React.ComponentProps<typeof Feather>['name'];
-  color?: string;
-  type: ItemType;
+  color?: string; type: ItemType;
 };
 
 export default function ArchivadosScreen() {
   const theme = useTheme();
-
-  const {
-    _hydrated,
-    notes,
-    checklists,
-    ideas,
-    unarchiveNote,
-    unarchiveChecklist,
-    unarchiveIdea,
-    deleteNote,
-    deleteChecklist,
-    deleteIdea,
-  } = useNotesStore();
+  const { _hydrated, notes, checklists, ideas,
+    unarchiveNote, unarchiveChecklist, unarchiveIdea,
+    deleteNote, deleteChecklist, deleteIdea } = useNotesStore();
 
   const [busqueda, setBusqueda] = useState('');
   const [saliendoId, setSaliendoId] = useState<string | null>(null);
-  const [accionPendiente, setAccionPendiente] =
-    useState<'delete' | 'unarchive' | null>(null);
+  const [accionPendiente, setAccionPendiente] = useState<'delete' | 'unarchive' | null>(null);
   const [hiddenIds, setHiddenIds] = useState<string[]>([]);
 
   useEffect(() => {
@@ -68,75 +40,37 @@ export default function ArchivadosScreen() {
       ...checklists.filter(c => c.archived).map(c => c.id),
       ...ideas.filter(i => i.archived).map(i => i.id),
     ];
-
-    setHiddenIds(prev =>
-      prev.filter(id => archivedIds.includes(id))
-    );
+    setHiddenIds(prev => prev.filter(id => archivedIds.includes(id)));
   }, [notes, checklists, ideas]);
 
-  if (!_hydrated) {
-    return (
-      <View
-        style={[styles.container, styles.center, { backgroundColor: theme.background }]}
-        accessibilityRole="text"
-        accessibilityLabel="Cargando elementos archivados"
-      >
-        <ActivityIndicator color={theme.primary} />
-      </View>
-    );
-  }
+  if (!_hydrated) return (
+    <View style={[styles.container, styles.center, { backgroundColor: theme.background }]}
+      accessibilityRole="text" accessibilityLabel="Cargando elementos archivados">
+      <ActivityIndicator color={theme.primary} />
+    </View>
+  );
 
-  const matches = (title: string) =>
-    title.toLowerCase().includes(busqueda.toLowerCase());
+  const matches = (title: string) => title.toLowerCase().includes(busqueda.toLowerCase());
 
   const mapItems = <T extends { id: string; title: string; archived: boolean }>(
-    data: T[],
-    mapper: (item: T) => ArchivedItem
-  ) =>
-    data
-      .filter(
-        item =>
-          item.archived &&
-          matches(item.title) &&
-          !hiddenIds.includes(item.id)
-      )
-      .map(mapper);
+    data: T[], mapper: (item: T) => ArchivedItem
+  ) => data.filter(item => item.archived && matches(item.title) && !hiddenIds.includes(item.id)).map(mapper);
 
   const sections = [
     {
       title: 'NOTAS',
-      data: mapItems(notes, n => ({
-        id: n.id,
-        title: n.title,
-        subtitle: n.content ?? '',
-        icon: 'file-text',
-        type: 'nota',
-      })),
+      data: mapItems(notes, n => ({ id: n.id, title: n.title, subtitle: n.content ?? '', icon: 'file-text' as const, type: 'nota' as const })),
     },
     {
       title: 'TAREAS',
       data: mapItems(checklists, c => {
         const items = c.items ?? [];
-        const completed = items.filter(i => i?.isCompleted).length;
-        return {
-          id: c.id,
-          title: c.title,
-          subtitle: `${completed}/${items.length} completadas`,
-          icon: 'check-circle',
-          type: 'tarea',
-        };
+        return { id: c.id, title: c.title, subtitle: `${items.filter(i => i?.isCompleted).length}/${items.length} completadas`, icon: 'check-circle' as const, type: 'tarea' as const };
       }),
     },
     {
       title: 'IDEAS',
-      data: mapItems(ideas, i => ({
-        id: i.id,
-        title: i.title,
-        subtitle: (i.tags ?? []).join(', '),
-        icon: 'zap',
-        color: i.color,
-        type: 'idea',
-      })),
+      data: mapItems(ideas, i => ({ id: i.id, title: i.title, subtitle: (i.tags ?? []).join(', '), icon: 'zap' as const, color: i.color, type: 'idea' as const })),
     },
   ];
 
@@ -150,19 +84,11 @@ export default function ArchivadosScreen() {
   const confirmarEliminar = (id: string, nombre: string) =>
     Alert.alert('Eliminar', `¿Seguro que quieres eliminar "${nombre}"?`, [
       { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: () => {
-          setAccionPendiente('delete');
-          activarSalida(id);
-        },
-      },
+      { text: 'Eliminar', style: 'destructive', onPress: () => { setAccionPendiente('delete'); activarSalida(id); } },
     ]);
 
   const onFinish = (id: string, type: ItemType) => {
     setHiddenIds(prev => [...prev, id]);
-
     if (accionPendiente === 'delete') {
       if (type === 'nota') deleteNote(id);
       else if (type === 'tarea') deleteChecklist(id);
@@ -172,75 +98,35 @@ export default function ArchivadosScreen() {
       else if (type === 'tarea') unarchiveChecklist(id);
       else unarchiveIdea(id);
     }
-
     setSaliendoId(null);
     setAccionPendiente(null);
   };
 
   const renderCard = (item: ArchivedItem) => {
     const light = isColorLight(item.color || theme.card);
-
     const s = {
-      textColor: light ? '#000' : '#fff',
-      textSecondary: light ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)',
-      iconColor: light ? '#000' : '#fff',
-      btnColor: light ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.15)',
-      dangerBtnColor: light ? 'rgba(255,0,0,0.15)' : 'rgba(255,255,255,0.15)',
-      dangerIconColor: light ? '#900' : '#fff',
+      text: light ? '#000' : '#fff',
+      textSec: light ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)',
+      btn: light ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.15)',
+      danger: light ? 'rgba(255,0,0,0.15)' : 'rgba(255,255,255,0.15)',
+      dangerIcon: light ? '#900' : '#fff',
     };
-
     return (
-      <View
-        style={[
-          styles.card,
-          {
-            backgroundColor: item.color || theme.card,
-            borderWidth: 1,               
-            borderColor: theme.border,     
-          },
-        ]}
-        accessibilityRole="button"
-        accessibilityLabel={`Elemento archivado: ${item.title}. ${item.subtitle}`}
-      >
-        <Feather
-          name={item.icon}
-          size={18}
-          color={s.iconColor}
-          style={{ marginRight: 12 }}
-          accessibilityRole="image"
-          accessibilityLabel={`Icono de ${item.type}`}
-        />
-
+      <View style={[styles.card, { backgroundColor: item.color || theme.card, borderWidth: 1, borderColor: theme.border }]}
+        accessibilityRole="button" accessibilityLabel={`Elemento archivado: ${item.title}. ${item.subtitle}`}>
+        <Feather name={item.icon} size={18} color={s.text} style={{ marginRight: 12 }}
+          accessibilityRole="image" accessibilityLabel={`Icono de ${item.type}`} />
         <View style={{ flex: 1 }}>
-          <Text style={[styles.cardTitle, { color: s.textColor }]}>
-            {item.title}
-          </Text>
-
-          {!!item.subtitle && (
-            <Text
-              numberOfLines={1}
-              style={[styles.cardSub, { color: s.textSecondary }]}
-            >
-              {item.subtitle}
-            </Text>
-          )}
+          <Text style={[styles.cardTitle, { color: s.text }]}>{item.title}</Text>
+          {!!item.subtitle && <Text numberOfLines={1} style={[styles.cardSub, { color: s.textSec }]}>{item.subtitle}</Text>}
         </View>
-
-        <TouchableOpacity
-          style={[styles.accionBtn, { backgroundColor: s.btnColor }]}
-          onPress={() => {
-            setAccionPendiente('unarchive');
-            activarSalida(item.id);
-          }}
-        >
-          <Feather name="corner-up-left" size={16} color={s.iconColor} />
+        <TouchableOpacity style={[styles.accionBtn, { backgroundColor: s.btn }]}
+          onPress={() => { setAccionPendiente('unarchive'); activarSalida(item.id); }}>
+          <Feather name="corner-up-left" size={16} color={s.text} />
         </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.accionBtn, { backgroundColor: s.dangerBtnColor, marginLeft: 8 }]}
-          onPress={() => confirmarEliminar(item.id, item.title)}
-        >
-          <Feather name="trash-2" size={16} color={s.dangerIconColor} />
+        <TouchableOpacity style={[styles.accionBtn, { backgroundColor: s.danger, marginLeft: 8 }]}
+          onPress={() => confirmarEliminar(item.id, item.title)}>
+          <Feather name="trash-2" size={16} color={s.dangerIcon} />
         </TouchableOpacity>
       </View>
     );
@@ -251,22 +137,14 @@ export default function ArchivadosScreen() {
       <FadeOutLeft duration={250} onFinish={() => onFinish(item.id, item.type)}>
         {renderCard(item)}
       </FadeOutLeft>
-    ) : (
-      renderCard(item)
-    );
+    ) : renderCard(item);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.search, { backgroundColor: theme.card }]}>
         <Feather name="search" size={18} color={theme.textSecondary} />
-
-        <TextInput
-          value={busqueda}
-          onChangeText={setBusqueda}
-          placeholder="Buscar archivados..."
-          placeholderTextColor={theme.textTertiary}
-          style={[styles.searchInput, { color: theme.text }]}
-        />
+        <TextInput value={busqueda} onChangeText={setBusqueda} placeholder="Buscar archivados..."
+          placeholderTextColor={theme.textTertiary} style={[styles.searchInput, { color: theme.text }]} />
       </View>
 
       {!total ? (
@@ -274,22 +152,14 @@ export default function ArchivadosScreen() {
           <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
             {busqueda ? 'Sin resultados' : 'No hay elementos archivados'}
           </Text>
-
           <Text style={[styles.emptySubtext, { color: theme.textTertiary }]}>
-            {busqueda
-              ? 'Prueba otra búsqueda'
-              : 'Archiva notas, tareas o ideas para verlas aquí'}
+            {busqueda ? 'Prueba otra búsqueda' : 'Archiva notas, tareas o ideas para verlas aquí'}
           </Text>
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ padding: 16 }}>
           {sections.map(section => (
-            <ArchivedSection
-              key={section.title}
-              title={section.title}
-              data={section.data}
-              renderItem={renderItem}
-            />
+            <ArchivedSection key={section.title} title={section.title} data={section.data} renderItem={renderItem} />
           ))}
         </ScrollView>
       )}
@@ -300,50 +170,13 @@ export default function ArchivadosScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { justifyContent: 'center', alignItems: 'center' },
-
-  search: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    margin: 16,
-    borderRadius: 12,
-  },
-
-  searchInput: {
-    flex: 1,
-    marginLeft: 10,
-    fontSize: 16,
-  },
-
+  search: { flexDirection: 'row', alignItems: 'center', padding: 12, margin: 16, borderRadius: 12 },
+  searchInput: { flex: 1, marginLeft: 10, fontSize: 16 },
   empty: { flex: 1 },
   emptyText: { fontSize: 18, fontWeight: '600' },
-  emptySubtext: {
-    fontSize: 14,
-    marginTop: 8,
-    textAlign: 'center',
-    paddingHorizontal: 40,
-  },
-
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-
-  cardSub: {
-    fontSize: 13,
-    marginTop: 2,
-  },
-
-  accionBtn: {
-    padding: 8,
-    borderRadius: 8,
-  },
+  emptySubtext: { fontSize: 14, marginTop: 8, textAlign: 'center', paddingHorizontal: 40 },
+  card: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 12, marginBottom: 8 },
+  cardTitle: { fontSize: 16, fontWeight: '600' },
+  cardSub: { fontSize: 13, marginTop: 2 },
+  accionBtn: { padding: 8, borderRadius: 8 },
 });

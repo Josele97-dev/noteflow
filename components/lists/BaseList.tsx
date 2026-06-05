@@ -14,126 +14,50 @@ interface Props<T extends { id?: string }> {
   renderItem: ListRenderItem<T>;
 }
 
-export function BaseList<T extends { id?: string }>({
-  data,
-  searchKeys,
-  searchPlaceholder,
-  emptyTitle,
-  emptySubtitle,
-  renderItem,
-}: Props<T>) {
+export function BaseList<T extends { id?: string }>({ data, searchKeys, searchPlaceholder, emptyTitle, emptySubtitle, renderItem }: Props<T>) {
   const theme = useTheme();
   const [query, setQuery] = useState('');
-
-  // ✅ Ref correctamente tipado para FlashList
   const listRef = useRef<React.ElementRef<typeof FlashList<T>>>(null);
 
-  useFocusEffect(
-    useCallback(() => {
-      requestAnimationFrame(() => {
-        // ✅ scrollToOffset ahora reconocido correctamente
-        listRef.current?.scrollToOffset({
-          offset: 0,
-          animated: false,
-        });
-      });
-    }, [])
-  );
+  useFocusEffect(useCallback(() => {
+    requestAnimationFrame(() => listRef.current?.scrollToOffset({ offset: 0, animated: false }));
+  }, []));
 
   const q = query.toLowerCase();
-
-  const filtered = q
-    ? data.filter((item) =>
-        searchKeys(item).some((field) =>
-          field.toLowerCase().includes(q)
-        )
-      )
-    : data;
-
+  const filtered = q ? data.filter(item => searchKeys(item).some(f => f.toLowerCase().includes(q))) : data;
   const isEmpty = filtered.length === 0;
+  const emptyLabel = data.length === 0 ? emptyTitle : 'Sin resultados';
+  const emptySubLabel = data.length === 0 ? emptySubtitle : 'Prueba otra búsqueda';
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: theme.background }]}
-      accessibilityLabel="Lista de elementos"
-    >
-      <View
-        style={[styles.search, { backgroundColor: theme.card }]}
-        accessibilityRole="search"
-        accessibilityLabel="Buscador de elementos"
-      >
+    <View style={[styles.container, { backgroundColor: theme.background }]} accessibilityLabel="Lista de elementos">
+      <View style={[styles.search, { backgroundColor: theme.card }]} accessibilityRole="search" accessibilityLabel="Buscador de elementos">
         <Feather name="search" size={18} color={theme.textSecondary} />
-
-        <TextInput
-          style={[styles.searchInput, { color: theme.text }]}
-          placeholder={searchPlaceholder}
-          placeholderTextColor={theme.textTertiary}
-          value={query}
-          onChangeText={setQuery}
-          accessibilityRole="search"
-          accessibilityLabel={searchPlaceholder}
-        />
+        <TextInput style={[styles.searchInput, { color: theme.text }]} placeholder={searchPlaceholder}
+          placeholderTextColor={theme.textTertiary} value={query} onChangeText={setQuery}
+          accessibilityRole="search" accessibilityLabel={searchPlaceholder} />
       </View>
 
       {isEmpty ? (
-        <View
-          style={styles.empty}
-          accessibilityRole="text"
-          accessibilityLabel={
-            data.length === 0 ? emptyTitle : 'Sin resultados'
-          }
-        >
-          <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-            {data.length === 0 ? emptyTitle : 'Sin resultados'}
-          </Text>
-
-          <Text style={[styles.emptySubtext, { color: theme.textTertiary }]}>
-            {data.length === 0 ? emptySubtitle : 'Prueba otra búsqueda'}
-          </Text>
+        <View style={styles.empty} accessibilityRole="text" accessibilityLabel={emptyLabel}>
+          <Text style={[styles.emptyText, { color: theme.textSecondary }]}>{emptyLabel}</Text>
+          <Text style={[styles.emptySubtext, { color: theme.textTertiary }]}>{emptySubLabel}</Text>
         </View>
       ) : (
-        <FlashList<T>
-          ref={listRef}
-          data={filtered}
-          keyExtractor={(item, index) => item.id ?? index.toString()}
+        <FlashList<T> ref={listRef} data={filtered}
+          keyExtractor={(item, i) => item.id ?? i.toString()}
           contentContainerStyle={{ paddingBottom: 16 }}
-          renderItem={renderItem}
-        />
+          renderItem={renderItem} />
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  search: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    margin: 16,
-    borderRadius: 12,
-  },
-  searchInput: {
-    marginLeft: 10,
-    flex: 1,
-    fontSize: 16,
-  },
-  empty: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  emptySubtext: {
-    fontSize: 14,
-    marginTop: 8,
-    textAlign: 'center',
-  },
+  container: { flex: 1 },
+  search: { flexDirection: 'row', alignItems: 'center', padding: 12, margin: 16, borderRadius: 12 },
+  searchInput: { marginLeft: 10, flex: 1, fontSize: 16 },
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
+  emptyText: { fontSize: 18, fontWeight: '600', textAlign: 'center' },
+  emptySubtext: { fontSize: 14, marginTop: 8, textAlign: 'center' },
 });
