@@ -26,7 +26,6 @@ export function EditHeader({
 
   const bg = isDark ? theme.card : theme.primary;
   const text = isDark ? theme.text : '#fff';
-  const subtle = isDark ? theme.textSecondary : 'rgba(255,255,255,0.8)';
 
   return (
     <>

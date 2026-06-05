@@ -45,7 +45,6 @@ export function ItemActions({
       accessibilityRole="toolbar"
       accessibilityLabel="Acciones del elemento"
     >
-      {/* EDITAR */}
       <TouchableOpacity
         disabled={isOpening}
         style={[styles.btn, isOpening ? btnDisabled : btnBase]}
@@ -61,7 +60,6 @@ export function ItemActions({
         <Text style={[styles.btnText, { color: textColor }]}>Editar</Text>
       </TouchableOpacity>
 
-      {/* ARCHIVAR */}
       <TouchableOpacity
         style={[styles.btn, btnBase]}
         onPress={() => {
@@ -75,7 +73,6 @@ export function ItemActions({
         <Text style={[styles.btnText, { color: textColor }]}>Archivar</Text>
       </TouchableOpacity>
 
-      {/* ELIMINAR */}
       <TouchableOpacity
         style={[
           styles.btn,

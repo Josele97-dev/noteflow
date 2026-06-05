@@ -1,6 +1,11 @@
 import { useTheme } from '@/constants/theme';
 import { useRef } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  View
+} from 'react-native';
 
 interface Props {
   value: Date;
@@ -11,20 +16,26 @@ interface Props {
 const ITEM_HEIGHT = 44;
 const VISIBLE = 5;
 
+type WheelPickerProps = {
+  items: string[];
+  selectedIndex: number;
+  onSelect: (i: number) => void;
+  theme: {
+    primary: string;
+    text: string;
+    textTertiary: string;
+  };
+  label: string;
+};
+
 function WheelPicker({
   items,
   selectedIndex,
   onSelect,
   theme,
   label,
-}: {
-  items: string[];
-  selectedIndex: number;
-  onSelect: (i: number) => void;
-  theme: any;
-  label: string;
-}) {
-  const ref = useRef<FlatList>(null);
+}: WheelPickerProps) {
+  const ref = useRef<FlatList<string>>(null);
 
   return (
     <View
@@ -51,7 +62,7 @@ function WheelPicker({
         ]}
       />
 
-      <FlatList
+      <FlatList<string>
         ref={ref}
         data={['', '', ...items, '', '']}
         keyExtractor={(_, i) => String(i)}
@@ -75,17 +86,12 @@ function WheelPicker({
           const isSelected = realIndex === selectedIndex;
 
           return (
-            <View
-              style={styles.item}
-              accessible={false}
-            >
+            <View style={styles.item} accessible={false}>
               <Text
                 style={[
                   styles.itemText,
                   {
-                    color: isSelected
-                      ? theme.text
-                      : theme.textTertiary,
+                    color: isSelected ? theme.text : theme.textTertiary,
                     fontWeight: isSelected ? '700' : '400',
                     fontSize: isSelected ? 18 : 15,
                   },

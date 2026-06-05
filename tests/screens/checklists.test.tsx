@@ -13,21 +13,33 @@ import React from 'react';
 import ChecklistsScreen from '../../app/(tabs)/checklists';
 import { useNotesStore } from '../../store/notesStore';
 
+// 🔥 Mock tipado de ChecklistCard
 jest.mock('../../components/items/ChecklistCard', () => {
   const { Text } = require('react-native');
-  return ({ checklist }: any) => <Text>{checklist.title}</Text>;
+  return ({
+    checklist,
+  }: {
+    checklist: { id: string; title: string };
+  }) => <Text>{checklist.title}</Text>;
 });
 
+// 🔥 Mock tipado de BaseList
 jest.mock('../../components/lists/BaseList', () => {
   const { View, Text } = require('react-native');
 
   return {
-    BaseList: ({ data, emptyTitle }: any) => (
+    BaseList: ({
+      data,
+      emptyTitle,
+    }: {
+      data: { id: string; title: string }[];
+      emptyTitle: string;
+    }) => (
       <View>
         {data.length === 0 ? (
           <Text>{emptyTitle}</Text>
         ) : (
-          data.map((c: any) => <Text key={c.id}>{c.title}</Text>)
+          data.map((c) => <Text key={c.id}>{c.title}</Text>)
         )}
       </View>
     ),
@@ -48,8 +60,7 @@ describe('ChecklistsScreen', () => {
 
   it('muestra estado vacío', () => {
     const { getByText } = render(<ChecklistsScreen />);
-
-    expect(getByText('No hay listas aún')).toBeTruthy();
+    expect(getByText('No hay tareas aún')).toBeTruthy();
   });
 
   it('muestra tareas cuando existen', () => {
@@ -67,10 +78,11 @@ describe('ChecklistsScreen', () => {
         },
       ],
       _hydrated: true,
+      isLoading: false,
+      error: null,
     });
 
     const { getByText } = render(<ChecklistsScreen />);
-
     expect(getByText('Tarea 1')).toBeTruthy();
   });
 });

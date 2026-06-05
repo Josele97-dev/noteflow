@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, { Easing, FadeInDown, FadeOutLeft } from 'react-native-reanimated';
@@ -17,11 +17,14 @@ export default function NoteCard({ note, onPress, onDelete, index = 0 }: Props) 
   const theme = useTheme();
   const [removing, setRemoving] = useState(false);
 
+  const onDeleteRef = useRef(onDelete);
+  onDeleteRef.current = onDelete;
+
   const fecha = new Date(note.createdAt).toLocaleDateString('es-ES');
 
   useEffect(() => {
     if (!removing) return;
-    const timeout = setTimeout(() => onDelete?.(), 200);
+    const timeout = setTimeout(() => onDeleteRef.current?.(), 200);
     return () => clearTimeout(timeout);
   }, [removing]);
 
@@ -57,7 +60,6 @@ export default function NoteCard({ note, onPress, onDelete, index = 0 }: Props) 
             },
           ]}
         >
-          {/* HEADER */}
           <View style={styles.header}>
             <View style={[styles.iconBadge, { backgroundColor: theme.primary + '15' }]}>
               <Ionicons name="document-text-outline" size={18} color={theme.primary} />
@@ -68,12 +70,10 @@ export default function NoteCard({ note, onPress, onDelete, index = 0 }: Props) 
             </Text>
           </View>
 
-          {/* CONTENT */}
           <Text numberOfLines={2} style={[styles.content, { color: theme.textSecondary }]}>
             {note.content}
           </Text>
 
-          {/* FOOTER */}
           <View style={styles.footer}>
             <Text style={[styles.date, { color: theme.textTertiary }]}>
               {fecha}

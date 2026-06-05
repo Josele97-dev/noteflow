@@ -35,7 +35,7 @@ export default function ChecklistsScreen() {
       data={activas}
       searchKeys={(c) => [c.title, ...c.items.map((i) => i.text)]}
       searchPlaceholder="Buscar listas o tareas..."
-      emptyTitle="No hay listas aún"
+      emptyTitle="No hay tareas aún"
       emptySubtitle="Pulsa + para crear una"
       renderItem={({ item, index }) => (
         <ChecklistCard

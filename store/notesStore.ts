@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import * as api from '../lib/api';
-import { ChecklistNote, IdeaNote, Note, NoteLocation } from '../types';
+import { ChecklistItem, ChecklistNote, IdeaNote, Note, NoteLocation } from '../types';
 
 interface NotesStore {
   notes: Note[];
@@ -13,7 +13,7 @@ interface NotesStore {
   fetchAll: () => Promise<void>;
 
   addNote: (note: { title: string; content: string; location?: NoteLocation }) => Promise<Note>;
-  addChecklist: (checklist: { title: string; items: any[]; location?: NoteLocation }) => Promise<ChecklistNote>;
+  addChecklist: (checklist: { title: string; items: ChecklistItem[]; location?: NoteLocation }) => Promise<ChecklistNote>;
   addIdea: (idea: { title: string; content: string; color: string; tags: string[]; location?: NoteLocation }) => Promise<IdeaNote>;
 
   deleteNote: (id: string) => Promise<void>;
@@ -36,13 +36,20 @@ interface NotesStore {
   updateNoteLocation: (id: string, location: NoteLocation) => Promise<void>;
 }
 
-const mapDates = (item: any) => ({
+type RawItem = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  location?: string | NoteLocation;
+  [key: string]: unknown;
+};
+
+const mapDates = <T extends RawItem>(item: T) => ({
   ...item,
   createdAt: new Date(item.created_at),
   updatedAt: new Date(item.updated_at),
-  // location viene como JSONB de Postgres, puede ser objeto o string
   location: item.location
-    ? (typeof item.location === 'string' ? JSON.parse(item.location) : item.location)
+    ? (typeof item.location === 'string' ? JSON.parse(item.location) as NoteLocation : item.location)
     : undefined,
 });
 

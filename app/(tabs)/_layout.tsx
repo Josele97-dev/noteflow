@@ -2,16 +2,25 @@ import { Ionicons } from '@expo/vector-icons';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { Tabs, usePathname, useRouter } from 'expo-router';
+import type { ComponentProps } from 'react';
 import { useEffect, useState } from 'react';
-import { Image, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import {
+  Image,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../constants/theme';
+
+type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
 type Tab = {
   name: string;
   title: string;
   tipo?: string;
-  icon: React.ComponentProps<typeof Ionicons>['name'];
+  icon: IoniconName;
 };
 
 const TABS: Tab[] = [
@@ -57,7 +66,7 @@ export default function TabsLayout() {
       });
 
     return unsub;
-  }, []);
+  }, [user]);
 
   const headerBg = isDark ? card : primary;
   const headerTextColor = isDark ? text : '#ffffff';
@@ -142,10 +151,9 @@ export default function TabsLayout() {
         ))}
       </Tabs>
 
-      {/* BOTÓN FLOTANTE + ACCESIBLE */}
       {currentTab?.tipo && (
         <TouchableOpacity
-          onPress={() => router.push(`/crear?tipo=${currentTab.tipo}` as any)}
+          onPress={() => router.push(`/crear?tipo=${currentTab.tipo}`)}
           activeOpacity={0.8}
           style={{
             position: 'absolute',

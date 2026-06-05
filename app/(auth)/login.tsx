@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import auth from '@react-native-firebase/auth';
 import { useRouter } from 'expo-router';
+import type { ComponentProps } from 'react';
 import { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -10,11 +11,16 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  type KeyboardTypeOptions,
+  type TextInputProps,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../constants/theme';
 import * as api from '../../lib/api';
+
+// ✅ Tipo correcto para nombres de iconos Feather
+type FeatherIconName = ComponentProps<typeof Feather>['name'];
 
 export default function LoginScreen() {
   const theme = useTheme();
@@ -45,18 +51,18 @@ export default function LoginScreen() {
     autoCapitalize,
     secureTextEntry,
   }: {
-    icon: any;
+    icon: FeatherIconName;
     placeholder: string;
     value: string;
     onChangeText: (t: string) => void;
-    keyboardType?: string;
-    autoCapitalize?: string;
+    keyboardType?: KeyboardTypeOptions;
+    autoCapitalize?: TextInputProps['autoCapitalize'];
     secureTextEntry?: boolean;
   }) => (
     <View
       style={[
         styles.inputContainer,
-        { backgroundColor: theme.background, borderColor: theme.border }
+        { backgroundColor: theme.background, borderColor: theme.border },
       ]}
       accessibilityRole="none"
     >
@@ -68,8 +74,8 @@ export default function LoginScreen() {
         placeholderTextColor={theme.textTertiary}
         value={value}
         onChangeText={onChangeText}
-        keyboardType={keyboardType as any}
-        autoCapitalize={autoCapitalize as any}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
         secureTextEntry={secureTextEntry}
         accessibilityRole="text"
         accessibilityLabel={placeholder}
@@ -99,7 +105,6 @@ export default function LoginScreen() {
       accessibilityLabel="Pantalla de inicio de sesión"
     >
       <View style={[styles.container, { paddingTop: insets.top + 30 }]}>
-        
         <View
           style={styles.header}
           accessibilityRole="header"
@@ -109,17 +114,19 @@ export default function LoginScreen() {
             <Feather name="lock" size={34} color={theme.primary} accessible={false} />
           </View>
 
-          <Text style={[styles.titulo, { color: theme.text }]}>
-            Bienvenido
-          </Text>
+          <Text style={[styles.titulo, { color: theme.text }]}>Bienvenido</Text>
 
           <Text style={[styles.subtitulo, { color: theme.textSecondary }]}>
             Inicia sesión para continuar
           </Text>
         </View>
 
-        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: theme.card, borderColor: theme.border },
+          ]}
+        >
           <Input
             icon="mail"
             placeholder="Email"
@@ -160,18 +167,15 @@ export default function LoginScreen() {
 
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => router.push('/(auth)/register' as any)}
+          onPress={() => router.push('/(auth)/register')}
           accessibilityRole="button"
           accessibilityLabel="Ir a registro"
         >
           <Text style={[styles.link, { color: theme.textSecondary }]}>
             ¿No tienes cuenta?{' '}
-            <Text style={{ color: theme.primary, fontWeight: '700' }}>
-              Regístrate
-            </Text>
+            <Text style={{ color: theme.primary, fontWeight: '700' }}>Regístrate</Text>
           </Text>
         </TouchableOpacity>
-
       </View>
     </KeyboardAvoidingView>
   );
@@ -187,22 +191,22 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 22
+    marginBottom: 22,
   },
   titulo: {
     fontSize: 36,
     fontWeight: '800',
     marginBottom: 8,
-    letterSpacing: -1
+    letterSpacing: -1,
   },
   subtitulo: {
     fontSize: 16,
-    lineHeight: 22
+    lineHeight: 22,
   },
   card: {
     borderWidth: 1,
     borderRadius: 28,
-    padding: 20
+    padding: 20,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -211,33 +215,33 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingHorizontal: 14,
     height: 58,
-    marginBottom: 14
+    marginBottom: 14,
   },
   input: {
     flex: 1,
     fontSize: 16,
-    marginLeft: 10
+    marginLeft: 10,
   },
   error: {
     fontSize: 14,
     marginBottom: 12,
-    marginTop: 2
+    marginTop: 2,
   },
   btn: {
     height: 58,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8
+    marginTop: 8,
   },
   btnText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '700'
+    fontWeight: '700',
   },
   link: {
     textAlign: 'center',
     marginTop: 28,
-    fontSize: 15
-  }
+    fontSize: 15,
+  },
 });

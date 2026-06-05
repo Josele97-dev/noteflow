@@ -21,30 +21,40 @@ import React from 'react';
 import NotasScreen from '../../app/(tabs)/notas';
 import { useNotesStore } from '../../store/notesStore';
 
-
+// 🔥 Mock tipado de useRouter
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     push: jest.fn(),
   }),
 }));
 
-
+// 🔥 Mock tipado de NoteCard
 jest.mock('../../components/items/NoteCard', () => {
   const { Text } = require('react-native');
-  return ({ note }: any) => <Text>{note.title}</Text>;
+  return ({
+    note,
+  }: {
+    note: { id: string; title: string };
+  }) => <Text>{note.title}</Text>;
 });
 
-
+// 🔥 Mock tipado de BaseList
 jest.mock('../../components/lists/BaseList', () => {
   const { View, Text } = require('react-native');
 
   return {
-    BaseList: ({ data, emptyTitle }: any) => (
+    BaseList: ({
+      data,
+      emptyTitle,
+    }: {
+      data: { id: string; title: string }[];
+      emptyTitle: string;
+    }) => (
       <View>
         {data.length === 0 ? (
           <Text>{emptyTitle}</Text>
         ) : (
-          data.map((n: any) => <Text key={n.id}>{n.title}</Text>)
+          data.map((n) => <Text key={n.id}>{n.title}</Text>)
         )}
       </View>
     ),
@@ -65,7 +75,6 @@ describe('NotasScreen', () => {
 
   it('muestra estado vacío cuando no hay notas', () => {
     const { getByText } = render(<NotasScreen />);
-
     expect(getByText('No hay notas aún')).toBeTruthy();
   });
 
@@ -92,10 +101,11 @@ describe('NotasScreen', () => {
       checklists: [],
       ideas: [],
       _hydrated: true,
+      isLoading: false,
+      error: null,
     });
 
     const { getByText } = render(<NotasScreen />);
-
     expect(getByText('Nota 1')).toBeTruthy();
     expect(getByText('Nota 2')).toBeTruthy();
   });

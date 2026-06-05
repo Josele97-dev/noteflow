@@ -13,21 +13,33 @@ import React from 'react';
 import IdeasScreen from '../../app/(tabs)/ideas';
 import { useNotesStore } from '../../store/notesStore';
 
+// 🔥 Mock tipado de IdeaCard
 jest.mock('../../components/items/IdeaCard', () => {
   const { Text } = require('react-native');
-  return ({ idea }: any) => <Text>{idea.title}</Text>;
+  return ({
+    idea,
+  }: {
+    idea: { id: string; title: string };
+  }) => <Text>{idea.title}</Text>;
 });
 
+// 🔥 Mock tipado de BaseList
 jest.mock('../../components/lists/BaseList', () => {
   const { View, Text } = require('react-native');
 
   return {
-    BaseList: ({ data, emptyTitle }: any) => (
+    BaseList: ({
+      data,
+      emptyTitle,
+    }: {
+      data: { id: string; title: string }[];
+      emptyTitle: string;
+    }) => (
       <View>
         {data.length === 0 ? (
           <Text>{emptyTitle}</Text>
         ) : (
-          data.map((i: any) => <Text key={i.id}>{i.title}</Text>)
+          data.map((i) => <Text key={i.id}>{i.title}</Text>)
         )}
       </View>
     ),
@@ -41,6 +53,8 @@ describe('IdeasScreen', () => {
       ideas: [],
       checklists: [],
       _hydrated: true,
+      isLoading: false,
+      error: null,
     });
   });
 
@@ -66,10 +80,11 @@ describe('IdeasScreen', () => {
       ],
       checklists: [],
       _hydrated: true,
+      isLoading: false,
+      error: null,
     });
 
     const { getByText } = render(<IdeasScreen />);
-
     expect(getByText('Idea 1')).toBeTruthy();
   });
 });

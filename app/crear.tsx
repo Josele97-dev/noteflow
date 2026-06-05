@@ -5,8 +5,16 @@ import * as Notifications from 'expo-notifications';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-  KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet,
-  Text, TextInput, TouchableOpacity, View, useColorScheme
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
@@ -15,6 +23,7 @@ import { useTheme } from '../constants/theme';
 import { useNotesStore } from '../store/notesStore';
 import { NoteLocation } from '../types';
 
+// 🎨 Nombres de colores
 const COLOR_NAMES: Record<string, string> = {
   '#FFD700': 'amarillo',
   '#FF6B6B': 'rojo coral',
@@ -24,46 +33,102 @@ const COLOR_NAMES: Record<string, string> = {
   '#00BCD4': 'turquesa',
 };
 
+// 🔔 Configuración de notificaciones
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowBanner: true, shouldShowList: true, shouldPlaySound: true, shouldSetBadge: false
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
   }),
 });
 
+// 📅 Programar recordatorio
 async function scheduleReminder(title: string, date: Date) {
   const { status } = await Notifications.requestPermissionsAsync();
   if (status !== 'granted') return false;
+
   await Notifications.scheduleNotificationAsync({
-    content: { title: '🔔 Recordatorio NoteFlow', body: title },
-    trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date }
+    content: {
+      title: '🔔 Recordatorio NoteFlow',
+      body: title,
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date,
+    },
   });
+
   return true;
 }
 
+// 📍 Obtener ubicación actual
 async function getCurrentLocation(): Promise<NoteLocation | null> {
   try {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') return null;
-    const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+
+    const pos = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Balanced,
+    });
+
     const [addr] = await Location.reverseGeocodeAsync(pos.coords);
-    const address = [addr.street, addr.city].filter(Boolean).join(', ') || 'Ubicación desconocida';
-    return { latitude: pos.coords.latitude, longitude: pos.coords.longitude, address };
+    const address =
+      [addr.street, addr.city].filter(Boolean).join(', ') ||
+      'Ubicación desconocida';
+
+    return {
+      latitude: pos.coords.latitude,
+      longitude: pos.coords.longitude,
+      address,
+    };
   } catch {
     return null;
   }
 }
 
+// 🧩 Tipos y colores
 const TIPOS = ['nota', 'tarea', 'idea'] as const;
-const COLORES = ['#FFD700', '#FF6B6B', '#6C63FF', '#4CAF50', '#FF9800', '#00BCD4'];
-const noteSchema = z.object({ title: z.string().min(3, 'Mínimo 3 caracteres'), content: z.string().min(1, 'Contenido vacío') });
-const baseSchema = z.object({ title: z.string().min(3, 'Mínimo 3 caracteres') });
+const COLORES = [
+  '#FFD700',
+  '#FF6B6B',
+  '#6C63FF',
+  '#4CAF50',
+  '#FF9800',
+  '#00BCD4',
+] as const;
 
-const AddRow = ({ value, onChange, onAdd, placeholder, theme }: any) => (
+// ✅ Validaciones
+const noteSchema = z.object({
+  title: z.string().min(3, 'Mínimo 3 caracteres'),
+  content: z.string().min(1, 'Contenido vacío'),
+});
+
+const baseSchema = z.object({
+  title: z.string().min(3, 'Mínimo 3 caracteres'),
+});
+
+type AddRowProps = {
+  value: string;
+  onChange: (t: string) => void;
+  onAdd: () => void;
+  placeholder: string;
+  theme: ReturnType<typeof useTheme>;
+};
+
+const AddRow = ({ value, onChange, onAdd, placeholder, theme }: AddRowProps) => (
   <View style={styles.row}>
     <TextInput
-      style={[styles.input, styles.flex, { backgroundColor: theme.card, borderColor: theme.border, color: theme.text }]}
-      placeholder={placeholder} placeholderTextColor={theme.textTertiary}
-      value={value} onChangeText={onChange} onSubmitEditing={onAdd}
+      style={[
+        styles.input,
+        styles.flex,
+        { backgroundColor: theme.card, borderColor: theme.border, color: theme.text },
+      ]}
+      placeholder={placeholder}
+      placeholderTextColor={theme.textTertiary}
+      value={value}
+      onChangeText={onChange}
+      onSubmitEditing={onAdd}
       accessibilityLabel={placeholder}
       accessibilityRole="text"
     />
@@ -87,24 +152,29 @@ export default function NuevaNota() {
   const { addNote, addChecklist, addIdea, updateNote, updateChecklist, updateIdea } = useNotesStore();
   const { tipo: tipoParam } = useLocalSearchParams<{ tipo: string }>();
 
-  const [tipo, setTipo] = useState<typeof TIPOS[number]>(tipoParam as any || 'nota');
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [tareaInput, setTareaInput] = useState('');
-  const [tareas, setTareas] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
-  const [color, setColor] = useState('#FFD700');
-  const [errors, setErrors] = useState<any>({});
-  const [showReminderModal, setShowReminderModal] = useState(false);
-  const [pickerMode, setPickerMode] = useState<'date' | 'time' | null>(null);
-  const [reminderDate, setReminderDate] = useState(new Date());
-  const [dateError, setDateError] = useState('');
-  const [isDateValid, setIsDateValid] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [capturedLocation, setCapturedLocation] = useState<NoteLocation | null>(null);
-  const [savedId, setSavedId] = useState<string | null>(null);
-  const [savedTipo, setSavedTipo] = useState<typeof TIPOS[number]>('nota');
+const [tipo, setTipo] = useState<typeof TIPOS[number]>(
+  (TIPOS as readonly string[]).includes(tipoParam ?? '')
+    ? (tipoParam as typeof TIPOS[number])
+    : 'nota'
+);
+const [title, setTitle] = useState('');
+const [content, setContent] = useState('');
+const [tareaInput, setTareaInput] = useState('');
+const [tareas, setTareas] = useState<string[]>([]);
+const [tagInput, setTagInput] = useState('');
+const [tags, setTags] = useState<string[]>([]);
+const [color, setColor] = useState('#FFD700');
+const [errors, setErrors] = useState<Record<string, string[]>>({});
+const [showReminderModal, setShowReminderModal] = useState(false);
+const [pickerMode, setPickerMode] = useState<'date' | 'time' | null>(null);
+const [reminderDate, setReminderDate] = useState(new Date());
+const [dateError, setDateError] = useState('');
+const [isDateValid, setIsDateValid] = useState(true);
+const [isSaving, setIsSaving] = useState(false);
+const [, setCapturedLocation] = useState<NoteLocation | null>(null);
+const [, setSavedId] = useState<string | null>(null);
+const [, setSavedTipo] = useState<typeof TIPOS[number]>('nota');
+
 
   const inputStyle = [styles.input, { backgroundColor: theme.card, borderColor: theme.border, color: theme.text }];
 
@@ -227,8 +297,17 @@ export default function NuevaNota() {
           {TIPOS.map((t) => (
             <TouchableOpacity key={t}
               style={[styles.tipoBtn, { borderColor: theme.border }, tipo === t && { backgroundColor: theme.primary, borderColor: theme.primary }]}
-              onPress={() => { setTipo(t); setErrors({}); }}
-              accessibilityRole="button"
+        onPress={() => {
+        setTipo(t);
+        setErrors({});
+        setTitle('');
+        setContent('');
+        setTareas([]);
+        setTareaInput('');
+        setTags([]);
+        setTagInput('');
+        setColor('#FFD700');
+      }}              accessibilityRole="button"
               accessibilityLabel={`Seleccionar tipo ${t}`}
               accessibilityState={{ selected: tipo === t }}
             >
@@ -388,9 +467,11 @@ export default function NuevaNota() {
       </Text>
 
 
-            <Text style={[styles.modalSub, { color: theme.textSecondary }]} accessibilityRole="text">
-              Te notificaremos para "{title}"
+           <Text style={[styles.modalSub, { color: theme.textSecondary }]} accessibilityRole="text">
+           {`Te notificaremos para "${title}"`}
             </Text>
+
+
 
             {dateError !== '' && (
               <Text style={{ color: theme.danger, fontWeight: '600' }} accessibilityRole="alert">

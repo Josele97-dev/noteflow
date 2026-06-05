@@ -1,17 +1,15 @@
 import { useTheme } from '@/constants/theme';
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-const List = FlashList as unknown as React.ComponentType<any>;
-
-type Props<T> = {
+type Props<T extends { id?: string }> = {
   title: string;
   data: T[];
-  renderItem: (info: { item: T; index: number }) => React.ReactNode;
+  renderItem: ListRenderItem<T>;
 };
 
-export default function ArchivedSection<T>({
+export default function ArchivedSection<T extends { id?: string }>({
   title,
   data,
   renderItem,
@@ -26,13 +24,10 @@ export default function ArchivedSection<T>({
         {title}
       </Text>
 
-      <List
+      <FlashList<T>
         data={data}
         renderItem={renderItem}
-        estimatedItemSize={80}
-        keyExtractor={(item: any, index: number) =>
-          item?.id ?? index.toString()
-        }
+        keyExtractor={(item, index) => item.id ?? index.toString()}
         scrollEnabled={false}
         contentContainerStyle={styles.listContent}
       />

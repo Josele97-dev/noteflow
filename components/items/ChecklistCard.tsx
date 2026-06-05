@@ -1,22 +1,45 @@
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, { Easing, FadeInDown, FadeOutLeft } from 'react-native-reanimated';
 import { useTheme } from '../../constants/theme';
 
-export default function ChecklistCard({ checklist, onPress, onDelete, index = 0 }: any) {
+type ChecklistItem = {
+  id: string;
+  text: string;
+  isCompleted: boolean;
+};
+
+type Checklist = {
+  id: string;
+  title: string;
+  createdAt: string | number | Date;
+  items: ChecklistItem[];
+};
+
+type Props = {
+  checklist: Checklist;
+  onPress: () => void;
+  onDelete: () => void;
+  index?: number;
+};
+
+export default function ChecklistCard({ checklist, onPress, onDelete, index = 0 }: Props) {
   const theme = useTheme();
   const [removing, setRemoving] = useState(false);
 
+  const onDeleteRef = useRef(onDelete);
+  onDeleteRef.current = onDelete;
+
   const total = checklist.items.length;
-  const completadas = checklist.items.filter((i: any) => i.isCompleted).length;
+  const completadas = checklist.items.filter(i => i.isCompleted).length;
   const progreso = total ? (completadas / total) * 100 : 0;
   const fecha = new Date(checklist.createdAt).toLocaleDateString('es-ES');
 
   useEffect(() => {
     if (!removing) return;
-    const t = setTimeout(() => onDelete?.(), 200);
+    const t = setTimeout(() => onDeleteRef.current?.(), 200);
     return () => clearTimeout(t);
   }, [removing]);
 
@@ -47,7 +70,6 @@ export default function ChecklistCard({ checklist, onPress, onDelete, index = 0 
             { backgroundColor: theme.card, borderColor: theme.border },
           ]}
         >
-          {/* HEADER */}
           <View style={styles.header}>
             <View style={[styles.iconBadge, { backgroundColor: theme.primary + '15' }]}>
               <Feather name="list" size={16} color={theme.primary} />
@@ -58,12 +80,10 @@ export default function ChecklistCard({ checklist, onPress, onDelete, index = 0 
             </Text>
           </View>
 
-          {/* PROGRESO TEXTO */}
           <Text style={[styles.counter, { color: theme.textSecondary }]}>
             {completadas} de {total} completadas
           </Text>
 
-          {/* BAR */}
           <View style={[styles.barraFondo, { backgroundColor: theme.border }]}>
             <View
               style={[
@@ -73,7 +93,6 @@ export default function ChecklistCard({ checklist, onPress, onDelete, index = 0 
             />
           </View>
 
-          {/* FOOTER */}
           <Text style={[styles.date, { color: theme.textTertiary }]}>
             {fecha}
           </Text>
@@ -95,14 +114,12 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginBottom: 6,
   },
-
   iconBadge: {
     width: 28,
     height: 28,
@@ -110,35 +127,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   title: {
     fontSize: 16,
     fontWeight: '600',
     flex: 1,
   },
-
   counter: {
     fontSize: 13,
     marginBottom: 8,
   },
-
   barraFondo: {
     height: 6,
     borderRadius: 3,
     marginBottom: 10,
     overflow: 'hidden',
   },
-
   barraRelleno: {
     height: 6,
     borderRadius: 3,
   },
-
   date: {
     fontSize: 12,
     marginTop: 2,
   },
-
   deleteContainer: {
     marginVertical: 8,
     marginRight: 16,

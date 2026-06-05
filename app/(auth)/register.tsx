@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { useRouter } from 'expo-router';
+import type { ComponentProps } from 'react';
 import { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -11,11 +12,16 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  type KeyboardTypeOptions,
+  type TextInputProps,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../constants/theme';
 import * as api from '../../lib/api';
+
+// Tipo correcto para iconos Feather
+type FeatherIconName = ComponentProps<typeof Feather>['name'];
 
 export default function RegisterScreen() {
   const theme = useTheme();
@@ -43,10 +49,16 @@ export default function RegisterScreen() {
 
       await api.register(email, password);
       await api.login(email, password);
-    } catch (e: any) {
-      if (e.code === 'auth/email-already-in-use') setError('Este email ya está registrado');
-      else if (e.code === 'auth/weak-password') setError('La contraseña debe tener al menos 6 caracteres');
-      else setError('Error al registrarse');
+    } catch (e: unknown) {
+      const err = e as { code?: string };
+
+      if (err.code === 'auth/email-already-in-use') {
+        setError('Este email ya está registrado');
+      } else if (err.code === 'auth/weak-password') {
+        setError('La contraseña debe tener al menos 6 caracteres');
+      } else {
+        setError('Error al registrarse');
+      }
     }
   };
 
@@ -59,13 +71,21 @@ export default function RegisterScreen() {
     autoCapitalize,
     secureTextEntry,
     showToggle,
-  }: any) => (
+  }: {
+    icon: FeatherIconName;
+    placeholder: string;
+    value: string;
+    onChangeText: (t: string) => void;
+    keyboardType?: KeyboardTypeOptions;
+    autoCapitalize?: TextInputProps['autoCapitalize'];
+    secureTextEntry?: boolean;
+    showToggle?: boolean;
+  }) => (
     <View
       style={[
         styles.inputContainer,
-        { backgroundColor: theme.background, borderColor: theme.border }
+        { backgroundColor: theme.background, borderColor: theme.border },
       ]}
-      accessible
       accessibilityRole="none"
     >
       <Feather name={icon} size={18} color={theme.textSecondary} accessible={false} />
@@ -76,8 +96,8 @@ export default function RegisterScreen() {
         placeholderTextColor={theme.textTertiary}
         value={value}
         onChangeText={onChangeText}
-        keyboardType={keyboardType as any}
-        autoCapitalize={autoCapitalize as any}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
         secureTextEntry={secureTextEntry}
         accessibilityRole="text"
         accessibilityLabel={placeholder}
@@ -104,14 +124,11 @@ export default function RegisterScreen() {
     <KeyboardAvoidingView
       style={[styles.flex, { backgroundColor: theme.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      accessible
       accessibilityLabel="Pantalla de registro"
     >
       <View style={[styles.container, { paddingTop: insets.top + 30 }]}>
-        
         <View
           style={styles.header}
-          accessible
           accessibilityRole="header"
           accessibilityLabel="Crear cuenta"
         >
@@ -119,20 +136,29 @@ export default function RegisterScreen() {
             <Feather name="user-plus" size={34} color={theme.primary} accessible={false} />
           </View>
 
-          <Text style={[styles.titulo, { color: theme.text }]}>
-            Crear cuenta
-          </Text>
+          <Text style={[styles.titulo, { color: theme.text }]}>Crear cuenta</Text>
 
           <Text style={[styles.subtitulo, { color: theme.textSecondary }]}>
             Regístrate para empezar
           </Text>
         </View>
 
-        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: theme.card, borderColor: theme.border },
+          ]}
+        >
           <Input icon="user" placeholder="Nombre" value={name} onChangeText={setName} />
 
-          <Input icon="mail" placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+          <Input
+            icon="mail"
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
 
           <Input
             icon="lock"
@@ -166,7 +192,7 @@ export default function RegisterScreen() {
 
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => router.push('/(auth)/login' as any)}
+          onPress={() => router.push('/(auth)/login')}
           accessibilityRole="button"
           accessibilityLabel="Ir a inicio de sesión"
         >
@@ -177,7 +203,6 @@ export default function RegisterScreen() {
             </Text>
           </Text>
         </TouchableOpacity>
-
       </View>
     </KeyboardAvoidingView>
   );
@@ -193,22 +218,22 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 22
+    marginBottom: 22,
   },
   titulo: {
     fontSize: 36,
     fontWeight: '800',
     marginBottom: 8,
-    letterSpacing: -1
+    letterSpacing: -1,
   },
   subtitulo: {
     fontSize: 16,
-    lineHeight: 22
+    lineHeight: 22,
   },
   card: {
     borderWidth: 1,
     borderRadius: 28,
-    padding: 20
+    padding: 20,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -217,33 +242,33 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingHorizontal: 14,
     height: 58,
-    marginBottom: 14
+    marginBottom: 14,
   },
   input: {
     flex: 1,
     fontSize: 16,
-    marginLeft: 10
+    marginLeft: 10,
   },
   error: {
     fontSize: 14,
     marginBottom: 12,
-    marginTop: 2
+    marginTop: 2,
   },
   btn: {
     height: 58,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8
+    marginTop: 8,
   },
   btnText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '700'
+    fontWeight: '700',
   },
   link: {
     textAlign: 'center',
     marginTop: 28,
-    fontSize: 15
-  }
+    fontSize: 15,
+  },
 });

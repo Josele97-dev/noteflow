@@ -43,16 +43,13 @@ describe('notesStore', () => {
     expect(state.ideas).toEqual([]);
   });
 
-  
   it('fetchAll carga datos y activa _hydrated', async () => {
     await useNotesStore.getState().fetchAll();
 
     const state = useNotesStore.getState();
-
     expect(state._hydrated).toBe(true);
   });
 
-  
   it('addNote añade una nota', async () => {
     mockedApi.createNote.mockResolvedValue({
       id: '1',
@@ -60,7 +57,7 @@ describe('notesStore', () => {
       content: 'Contenido',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    } as any);
+    });
 
     await useNotesStore.getState().addNote({
       title: 'Mi nota',
@@ -73,7 +70,16 @@ describe('notesStore', () => {
 
   it('deleteNote elimina una nota', async () => {
     useNotesStore.setState({
-      notes: [{ id: '1', title: 'Nota' } as any],
+      notes: [
+        {
+          id: '1',
+          title: 'Nota',
+          content: '',
+          archived: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
     });
 
     mockedApi.deleteNote.mockResolvedValue(undefined);
@@ -85,10 +91,19 @@ describe('notesStore', () => {
 
   it('archiveNote marca como archivada', async () => {
     useNotesStore.setState({
-      notes: [{ id: '1', archived: false } as any],
+      notes: [
+        {
+          id: '1',
+          title: '',
+          content: '',
+          archived: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
     });
 
-    mockedApi.updateNote.mockResolvedValue({} as any);
+    mockedApi.updateNote.mockResolvedValue({});
 
     await useNotesStore.getState().archiveNote('1');
 
@@ -97,17 +112,25 @@ describe('notesStore', () => {
 
   it('unarchiveNote desmarca archivada', async () => {
     useNotesStore.setState({
-      notes: [{ id: '1', archived: true } as any],
+      notes: [
+        {
+          id: '1',
+          title: '',
+          content: '',
+          archived: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
     });
 
-    mockedApi.updateNote.mockResolvedValue({} as any);
+    mockedApi.updateNote.mockResolvedValue({});
 
     await useNotesStore.getState().unarchiveNote('1');
 
     expect(useNotesStore.getState().notes[0].archived).toBe(false);
   });
 
-  
   it('addIdea añade una idea', async () => {
     mockedApi.createIdea.mockResolvedValue({
       id: '2',
@@ -117,7 +140,7 @@ describe('notesStore', () => {
       tags: [],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    } as any);
+    });
 
     await useNotesStore.getState().addIdea({
       title: 'Idea',
@@ -131,7 +154,18 @@ describe('notesStore', () => {
 
   it('deleteIdea elimina una idea', async () => {
     useNotesStore.setState({
-      ideas: [{ id: '2' } as any],
+      ideas: [
+        {
+          id: '2',
+          title: '',
+          content: '',
+          color: '',
+          tags: [],
+          archived: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
     });
 
     mockedApi.deleteIdea.mockResolvedValue(undefined);
@@ -141,7 +175,6 @@ describe('notesStore', () => {
     expect(useNotesStore.getState().ideas).toHaveLength(0);
   });
 
- 
   it('addChecklist añade una tarea', async () => {
     mockedApi.createChecklist.mockResolvedValue({
       id: '3',
@@ -149,7 +182,7 @@ describe('notesStore', () => {
       items: [],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    } as any);
+    });
 
     await useNotesStore.getState().addChecklist({
       title: 'Tarea',
@@ -161,7 +194,16 @@ describe('notesStore', () => {
 
   it('deleteChecklist elimina una tarea', async () => {
     useNotesStore.setState({
-      checklists: [{ id: '3' } as any],
+      checklists: [
+        {
+          id: '3',
+          title: '',
+          items: [],
+          archived: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
     });
 
     mockedApi.deleteChecklist.mockResolvedValue(undefined);
@@ -173,10 +215,19 @@ describe('notesStore', () => {
 
   it('archiveChecklist marca tarea como archivada', async () => {
     useNotesStore.setState({
-      checklists: [{ id: '3', archived: false } as any],
+      checklists: [
+        {
+          id: '3',
+          title: '',
+          items: [],
+          archived: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
     });
 
-    mockedApi.updateChecklist.mockResolvedValue({} as any);
+    mockedApi.updateChecklist.mockResolvedValue({});
 
     await useNotesStore.getState().archiveChecklist('3');
 

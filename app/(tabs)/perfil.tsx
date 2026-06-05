@@ -100,7 +100,7 @@ export default function PerfilScreen() {
       await firestore().collection('users').doc(user.uid).update({
         avatarUrl: publicUrl,
       });
-    } catch (e) {
+    } catch {
       Alert.alert('Error', 'No se pudo subir la imagen');
     } finally {
       setUploading(false);
@@ -274,7 +274,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  /* INFO CARD */
   card: {
     borderWidth: 1,
     borderRadius: 28,

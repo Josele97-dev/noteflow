@@ -1,22 +1,20 @@
 import { useTheme } from '@/constants/theme';
 import { Feather } from '@expo/vector-icons';
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
-const List = FlashList as unknown as React.ComponentType<any>;
-
-interface Props<T> {
+interface Props<T extends { id?: string }> {
   data: T[];
   searchKeys: (item: T) => string[];
   searchPlaceholder: string;
   emptyTitle: string;
   emptySubtitle: string;
-  renderItem: (info: { item: T; index: number }) => React.ReactNode;
+  renderItem: ListRenderItem<T>;
 }
 
-export function BaseList<T>({
+export function BaseList<T extends { id?: string }>({
   data,
   searchKeys,
   searchPlaceholder,
@@ -26,12 +24,15 @@ export function BaseList<T>({
 }: Props<T>) {
   const theme = useTheme();
   const [query, setQuery] = useState('');
-  const listRef = useRef<any>(null);
+
+  // ✅ Ref correctamente tipado para FlashList
+  const listRef = useRef<React.ElementRef<typeof FlashList<T>>>(null);
 
   useFocusEffect(
     useCallback(() => {
       requestAnimationFrame(() => {
-        listRef.current?.scrollToOffset?.({
+        // ✅ scrollToOffset ahora reconocido correctamente
+        listRef.current?.scrollToOffset({
           offset: 0,
           animated: false,
         });
@@ -91,17 +92,12 @@ export function BaseList<T>({
           </Text>
         </View>
       ) : (
-        <List
+        <FlashList<T>
           ref={listRef}
           data={filtered}
-          keyExtractor={(item: any, index: number) =>
-            item?.id ?? index.toString()
-          }
-          estimatedItemSize={90}
+          keyExtractor={(item, index) => item.id ?? index.toString()}
           contentContainerStyle={{ paddingBottom: 16 }}
-          renderItem={({ item, index }: { item: T; index: number }) =>
-            renderItem({ item, index })
-          }
+          renderItem={renderItem}
         />
       )}
     </View>

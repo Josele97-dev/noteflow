@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, { Easing, FadeInDown, FadeOutLeft } from 'react-native-reanimated';
@@ -15,9 +15,27 @@ function getReadableTextColor(bgColor: string) {
   return luminance > 160 ? '#000' : '#fff';
 }
 
-export default function IdeaCard({ idea, onPress, onDelete, index = 0 }: any) {
+type Idea = {
+  id: string;
+  title: string;
+  color: string;
+  tags: string[];
+  createdAt: string | number | Date;
+};
+
+type Props = {
+  idea: Idea;
+  onPress: () => void;
+  onDelete: () => void;
+  index?: number;
+};
+
+export default function IdeaCard({ idea, onPress, onDelete, index = 0 }: Props) {
   const theme = useTheme();
   const [removing, setRemoving] = useState(false);
+
+  const onDeleteRef = useRef(onDelete);
+  onDeleteRef.current = onDelete;
 
   const bg = idea.color || theme.card;
   const readable = getReadableTextColor(bg);
@@ -37,7 +55,7 @@ export default function IdeaCard({ idea, onPress, onDelete, index = 0 }: any) {
 
   useEffect(() => {
     if (!removing) return;
-    const t = setTimeout(() => onDelete?.(), 200);
+    const t = setTimeout(() => onDeleteRef.current?.(), 200);
     return () => clearTimeout(t);
   }, [removing]);
 
@@ -68,7 +86,6 @@ export default function IdeaCard({ idea, onPress, onDelete, index = 0 }: any) {
             { backgroundColor: bg, borderColor: theme.border },
           ]}
         >
-          {/* TITLE ROW */}
           <View style={styles.row}>
             <Ionicons
               name="bulb-outline"
@@ -81,10 +98,9 @@ export default function IdeaCard({ idea, onPress, onDelete, index = 0 }: any) {
             </Text>
           </View>
 
-          {/* TAGS */}
           {tags.length > 0 && (
             <View style={styles.tags}>
-              {tags.map((tag: string, i: number) => (
+              {tags.map((tag, i) => (
                 <View
                   key={i}
                   style={[styles.tag, { backgroundColor: btnColor }]}
@@ -97,7 +113,6 @@ export default function IdeaCard({ idea, onPress, onDelete, index = 0 }: any) {
             </View>
           )}
 
-          {/* FOOTER */}
           <View style={styles.footer}>
             <Text style={[styles.date, { color: textSecondary }]}>
               {fecha}
@@ -121,46 +136,38 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
   },
-
   title: {
     fontSize: 16,
     fontWeight: '600',
     flexShrink: 1,
   },
-
   tags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
     marginBottom: 8,
   },
-
   tag: {
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-
   tagText: {
     fontSize: 12,
   },
-
   date: {
     fontSize: 12,
     marginTop: 2,
   },
-
   footer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
   },
-
   deleteContainer: {
     marginVertical: 8,
     marginRight: 16,
