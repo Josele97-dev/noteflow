@@ -1,12 +1,13 @@
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
+import { User } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { colors } from '../constants/theme';
+import { listenAuth } from '../lib/firebase';
 import { useNotesStore } from '../store/notesStore';
 
 SplashScreen.preventAutoHideAsync();
@@ -18,26 +19,24 @@ export default function RootLayout() {
 
   const fetchAll = useNotesStore((s) => s.fetchAll);
   const router = useRouter();
-  const segments = useSegments() as string[]; // ✅ tipado explícito para evitar el warning
+  const segments = useSegments() as string[];
 
-  // ✅ Tipo correcto para usuario Firebase
-  const [user, setUser] = useState<FirebaseAuthTypes.User | null | undefined>(undefined);
+  const [user, setUser] = useState<User | null | undefined>(undefined);
 
   useEffect(() => {
     SystemUI.setBackgroundColorAsync(theme.background);
   }, [theme.background]);
 
   useEffect(() => {
-    const unsubscribe = auth().onAuthStateChanged((u) => setUser(u));
+    const unsubscribe = listenAuth((u) => setUser(u));
     return unsubscribe;
   }, []);
 
   useEffect(() => {
-    if (user === undefined) return; // aún cargando
+    if (user === undefined) return;
 
     SplashScreen.hideAsync();
 
-    // ✅ Comparaciones seguras y sin advertencias
     const inAuthGroup = segments[0] === '(auth)';
     const inIndex = segments.length === 0;
 
@@ -65,73 +64,13 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-        <Stack.Screen
-          name="notas/[id]"
-          options={{
-            title: 'Nota',
-            presentation: 'card',
-            animation: 'slide_from_right',
-          }}
-        />
-
-        <Stack.Screen
-          name="notas/editar/EditNoteScreen"
-          options={{
-            title: '',
-            presentation: 'modal',
-            animation: 'slide_from_bottom',
-            headerShown: false,
-          }}
-        />
-
-        <Stack.Screen
-          name="ideas/[id]"
-          options={{
-            title: 'Idea',
-            presentation: 'card',
-            animation: 'slide_from_right',
-          }}
-        />
-
-        <Stack.Screen
-          name="ideas/editar/EditIdeaScreen"
-          options={{
-            title: '',
-            presentation: 'modal',
-            animation: 'slide_from_bottom',
-            headerShown: false,
-          }}
-        />
-
-        <Stack.Screen
-          name="checklists/[id]"
-          options={{
-            title: 'Tarea',
-            presentation: 'card',
-            animation: 'slide_from_right',
-          }}
-        />
-
-        <Stack.Screen
-          name="checklists/editar/EditTaskScreen"
-          options={{
-            title: '',
-            presentation: 'modal',
-            animation: 'slide_from_bottom',
-            headerShown: false,
-          }}
-        />
-
-        <Stack.Screen
-          name="crear"
-          options={{
-            title: 'Crear',
-            presentation: 'modal',
-            animation: 'fade',
-            headerShown: false,
-          }}
-        />
+        <Stack.Screen name="notas/[id]" options={{ title: 'Nota', presentation: 'card', animation: 'slide_from_right' }} />
+        <Stack.Screen name="notas/editar/EditNoteScreen" options={{ title: '', presentation: 'modal', animation: 'slide_from_bottom', headerShown: false }} />
+        <Stack.Screen name="ideas/[id]" options={{ title: 'Idea', presentation: 'card', animation: 'slide_from_right' }} />
+        <Stack.Screen name="ideas/editar/EditIdeaScreen" options={{ title: '', presentation: 'modal', animation: 'slide_from_bottom', headerShown: false }} />
+        <Stack.Screen name="checklists/[id]" options={{ title: 'Tarea', presentation: 'card', animation: 'slide_from_right' }} />
+        <Stack.Screen name="checklists/editar/EditTaskScreen" options={{ title: '', presentation: 'modal', animation: 'slide_from_bottom', headerShown: false }} />
+        <Stack.Screen name="crear" options={{ title: 'Crear', presentation: 'modal', animation: 'fade', headerShown: false }} />
       </Stack>
     </GestureHandlerRootView>
   );

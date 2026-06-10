@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">52.17% </span>
+                <span class="strong">65.21% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>48/92</span>
+                <span class='fraction'>60/92</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">12.5% </span>
+                <span class="strong">21.87% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>4/32</span>
+                <span class='fraction'>7/32</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">49.09% </span>
+                <span class="strong">65.45% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>27/55</span>
+                <span class='fraction'>36/55</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">51.66% </span>
+                <span class="strong">61.66% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>31/60</span>
+                <span class='fraction'>37/60</span>
             </div>
         
             
@@ -385,8 +385,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -395,13 +395,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -575,9 +575,9 @@ export const useNotesStore = create&lt;NotesStore&gt;()((set, get) =&gt; ({
     set((s) =&gt; ({ checklists: s.checklists.map((c) =&gt; c.id === id ? { ...c, archived: true } : <span class="branch-1 cbranch-no" title="branch not covered" >c)</span> }));
   },
 &nbsp;
-  archiveIdea: <span class="fstat-no" title="function not covered" >as</span>ync (id) =&gt; {
-<span class="cstat-no" title="statement not covered" >    await api.updateIdea(id, { archived: true });</span>
-<span class="cstat-no" title="statement not covered" >    set(<span class="fstat-no" title="function not covered" >(s</span>) =&gt; (<span class="cstat-no" title="statement not covered" >{ ideas: s.ideas.map(<span class="fstat-no" title="function not covered" >(i</span>) =&gt; <span class="cstat-no" title="statement not covered" >i.id === id ? { ...i, archived: true } : i)</span> })</span>);</span>
+  archiveIdea: async (id) =&gt; {
+    await api.updateIdea(id, { archived: true });
+    set((s) =&gt; ({ ideas: s.ideas.map((i) =&gt; i.id === id ? { ...i, archived: true } : <span class="branch-1 cbranch-no" title="branch not covered" >i)</span> }));
   },
 &nbsp;
   unarchiveNote: async (id) =&gt; {
@@ -585,14 +585,14 @@ export const useNotesStore = create&lt;NotesStore&gt;()((set, get) =&gt; ({
     set((s) =&gt; ({ notes: s.notes.map((n) =&gt; n.id === id ? { ...n, archived: false } : <span class="branch-1 cbranch-no" title="branch not covered" >n)</span> }));
   },
 &nbsp;
-  unarchiveChecklist: <span class="fstat-no" title="function not covered" >as</span>ync (id) =&gt; {
-<span class="cstat-no" title="statement not covered" >    await api.updateChecklist(id, { archived: false });</span>
-<span class="cstat-no" title="statement not covered" >    set(<span class="fstat-no" title="function not covered" >(s</span>) =&gt; (<span class="cstat-no" title="statement not covered" >{ checklists: s.checklists.map(<span class="fstat-no" title="function not covered" >(c</span>) =&gt; <span class="cstat-no" title="statement not covered" >c.id === id ? { ...c, archived: false } : c)</span> })</span>);</span>
+  unarchiveChecklist: async (id) =&gt; {
+    await api.updateChecklist(id, { archived: false });
+    set((s) =&gt; ({ checklists: s.checklists.map((c) =&gt; c.id === id ? { ...c, archived: false } : <span class="branch-1 cbranch-no" title="branch not covered" >c)</span> }));
   },
 &nbsp;
-  unarchiveIdea: <span class="fstat-no" title="function not covered" >as</span>ync (id) =&gt; {
-<span class="cstat-no" title="statement not covered" >    await api.updateIdea(id, { archived: false });</span>
-<span class="cstat-no" title="statement not covered" >    set(<span class="fstat-no" title="function not covered" >(s</span>) =&gt; (<span class="cstat-no" title="statement not covered" >{ ideas: s.ideas.map(<span class="fstat-no" title="function not covered" >(i</span>) =&gt; <span class="cstat-no" title="statement not covered" >i.id === id ? { ...i, archived: false } : i)</span> })</span>);</span>
+  unarchiveIdea: async (id) =&gt; {
+    await api.updateIdea(id, { archived: false });
+    set((s) =&gt; ({ ideas: s.ideas.map((i) =&gt; i.id === id ? { ...i, archived: false } : <span class="branch-1 cbranch-no" title="branch not covered" >i)</span> }));
   },
 &nbsp;
   updateNote: <span class="fstat-no" title="function not covered" >as</span>ync (id, data) =&gt; {
@@ -643,7 +643,7 @@ export const useNotesStore = create&lt;NotesStore&gt;()((set, get) =&gt; ({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-05T08:31:53.349Z
+                at 2026-06-09T09:27:44.913Z
             </div>
         <script src="../prettify.js"></script>
         <script>

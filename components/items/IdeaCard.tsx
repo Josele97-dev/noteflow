@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, { Easing, FadeInDown, FadeOutLeft } from 'react-native-reanimated';
 import { useTheme } from '../../constants/theme';
@@ -29,16 +29,21 @@ export default function IdeaCard({ idea, onPress, onDelete, index = 0 }: Props) 
 
   useEffect(() => {
     if (!removing) return;
-    const t = setTimeout(() => onDeleteRef.current?.(), 200);
+    const t = setTimeout(() => onDeleteRef.current?.(), 250);
     return () => clearTimeout(t);
   }, [removing]);
 
   return (
     <Animated.View
       entering={FadeInDown.delay(index * 40).springify()}
-      exiting={FadeOutLeft.duration(200).easing(Easing.out(Easing.cubic))}
+      exiting={FadeOutLeft.duration(250).easing(Easing.out(Easing.cubic))}
       style={removing && { opacity: 0.95 }}>
-      <Swipeable enabled={!removing} friction={1.7} rightThreshold={28} overshootRight={false}
+      <Swipeable
+        enabled={!removing}
+        friction={1.5}
+        rightThreshold={20}
+        overshootRight={false}
+        overshootFriction={1}
         onSwipeableWillOpen={() => setRemoving(true)}
         renderRightActions={() => (
           <View style={[styles.deleteContainer, { backgroundColor: theme.danger }]}>
@@ -69,8 +74,13 @@ export default function IdeaCard({ idea, onPress, onDelete, index = 0 }: Props) 
   );
 }
 
+const cardShadow = Platform.select({
+  web: { boxShadow: '0px 2px 8px rgba(0,0,0,0.08)' },
+  default: { shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
+});
+
 const styles = StyleSheet.create({
-  card: { borderRadius: 12, padding: 16, marginHorizontal: 16, marginVertical: 8, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
+  card: { borderRadius: 12, padding: 16, marginHorizontal: 16, marginVertical: 8, borderWidth: 1, ...cardShadow },
   row: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   title: { fontSize: 16, fontWeight: '600', flexShrink: 1 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },

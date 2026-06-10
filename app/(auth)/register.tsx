@@ -1,7 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
 import { useRouter } from 'expo-router';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import type { ComponentProps } from 'react';
 import { useState } from 'react';
 import {
@@ -12,6 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../constants/theme';
 import * as api from '../../lib/api';
+import { auth } from '../../lib/firebase';
 
 type FeatherIconName = ComponentProps<typeof Feather>['name'];
 
@@ -35,15 +35,11 @@ const InputField = ({ icon, placeholder, value, onChangeText, keyboardType, auto
       <Feather name={icon} size={18} color={theme.textSecondary} accessible={false} />
       <TextInput
         style={[styles.input, { color: theme.text }]}
-        placeholder={placeholder}
-        placeholderTextColor={theme.textTertiary}
-        value={value}
-        onChangeText={onChangeText}
-        keyboardType={keyboardType}
-        autoCapitalize={autoCapitalize}
+        placeholder={placeholder} placeholderTextColor={theme.textTertiary}
+        value={value} onChangeText={onChangeText}
+        keyboardType={keyboardType} autoCapitalize={autoCapitalize}
         secureTextEntry={secureTextEntry}
-        accessibilityRole="text"
-        accessibilityLabel={placeholder}
+        accessibilityRole="text" accessibilityLabel={placeholder}
       />
       {showToggle && (
         <Pressable onPress={onTogglePass} accessibilityRole="button"
@@ -69,10 +65,7 @@ export default function RegisterScreen() {
   const register = async () => {
     try {
       setError('');
-      const { user } = await auth().createUserWithEmailAndPassword(email, password);
-      await firestore().collection('users').doc(user.uid).set({
-        name, email, createdAt: firestore.FieldValue.serverTimestamp(), avatarUrl: null,
-      });
+      await createUserWithEmailAndPassword(auth, email, password);
       await api.register(email, password);
       await api.login(email, password);
     } catch (e: unknown) {
@@ -88,7 +81,6 @@ export default function RegisterScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       accessibilityLabel="Pantalla de registro">
       <View style={[styles.container, { paddingTop: insets.top + 30 }]}>
-
         <View style={styles.header} accessibilityRole="header" accessibilityLabel="Crear cuenta">
           <View style={[styles.logo, { backgroundColor: theme.primary + '20' }]}>
             <Feather name="user-plus" size={34} color={theme.primary} accessible={false} />
@@ -120,7 +112,6 @@ export default function RegisterScreen() {
             <Text style={{ color: theme.primary, fontWeight: '700' }}>Inicia sesión</Text>
           </Text>
         </TouchableOpacity>
-
       </View>
     </KeyboardAvoidingView>
   );

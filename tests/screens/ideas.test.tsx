@@ -13,7 +13,6 @@ import React from 'react';
 import IdeasScreen from '../../app/(tabs)/ideas';
 import { useNotesStore } from '../../store/notesStore';
 
-// 🔥 Mock tipado de IdeaCard
 jest.mock('../../components/items/IdeaCard', () => {
   const { Text } = require('react-native');
   return ({
@@ -23,7 +22,6 @@ jest.mock('../../components/items/IdeaCard', () => {
   }) => <Text>{idea.title}</Text>;
 });
 
-// 🔥 Mock tipado de BaseList
 jest.mock('../../components/lists/BaseList', () => {
   const { View, Text } = require('react-native');
 

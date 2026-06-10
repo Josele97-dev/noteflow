@@ -3,7 +3,7 @@ import { ItemActions } from '@/components/items/ItemActions';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../constants/theme';
 import { useNotesStore } from '../../store/notesStore';
 
@@ -22,19 +22,24 @@ export default function IdeaDetalle() {
 
   const fecha = new Date(data.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  const confirmar = (titulo: string, mensaje: string, accion: () => void) =>
+  const confirmar = (titulo: string, mensaje: string, accion: () => void) => {
+    if (Platform.OS === 'web') {
+      if (window.confirm(mensaje)) accion();
+      return;
+    }
     Alert.alert(titulo, mensaje, [
       { text: 'Cancelar', style: 'cancel' },
       { text: titulo, style: titulo === 'Eliminar' ? 'destructive' : 'default', onPress: accion },
     ]);
+  };
 
   const eliminar = () => confirmar('Eliminar', '¿Seguro que quieres eliminar esta idea?', () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     deleteIdea(id); router.back();
   });
 
   const archivar = () => confirmar('Archivar', '¿Quieres archivar esta idea?', () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     archiveIdea(id); router.back();
   });
 
@@ -90,7 +95,6 @@ export default function IdeaDetalle() {
               </TouchableOpacity>
             </FadeInDown>
           )}
-
         </View>
       </ScrollView>
 

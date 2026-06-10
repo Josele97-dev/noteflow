@@ -3,7 +3,7 @@ import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator, Alert, ScrollView, StyleSheet,
+  ActivityIndicator, Alert, Platform, ScrollView, StyleSheet,
   Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { FadeOutLeft } from '../../components/animations/FadeOutLeft';
@@ -45,7 +45,7 @@ export default function ArchivadosScreen() {
 
   if (!_hydrated) return (
     <View style={[styles.container, styles.center, { backgroundColor: theme.background }]}
-      accessibilityRole="text" accessibilityLabel="Cargando elementos archivados">
+      accessibilityRole="progressbar" accessibilityLabel="Cargando elementos archivados">
       <ActivityIndicator color={theme.primary} />
     </View>
   );
@@ -77,15 +77,23 @@ export default function ArchivadosScreen() {
   const total = sections.reduce((a, s) => a + s.data.length, 0);
 
   const activarSalida = (id: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSaliendoId(id);
   };
 
-  const confirmarEliminar = (id: string, nombre: string) =>
+  const confirmarEliminar = (id: string, nombre: string) => {
+    if (Platform.OS === 'web') {
+      if (window.confirm(`¿Seguro que quieres eliminar "${nombre}"?`)) {
+        setAccionPendiente('delete');
+        activarSalida(id);
+      }
+      return;
+    }
     Alert.alert('Eliminar', `¿Seguro que quieres eliminar "${nombre}"?`, [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Eliminar', style: 'destructive', onPress: () => { setAccionPendiente('delete'); activarSalida(id); } },
     ]);
+  };
 
   const onFinish = (id: string, type: ItemType) => {
     setHiddenIds(prev => [...prev, id]);
@@ -113,7 +121,7 @@ export default function ArchivadosScreen() {
     };
     return (
       <View style={[styles.card, { backgroundColor: item.color || theme.card, borderWidth: 1, borderColor: theme.border }]}
-        accessibilityRole="button" accessibilityLabel={`Elemento archivado: ${item.title}. ${item.subtitle}`}>
+        accessibilityRole="none" accessibilityLabel={`Elemento archivado: ${item.title}. ${item.subtitle}`}>
         <Feather name={item.icon} size={18} color={s.text} style={{ marginRight: 12 }}
           accessibilityRole="image" accessibilityLabel={`Icono de ${item.type}`} />
         <View style={{ flex: 1 }}>

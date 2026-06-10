@@ -1,246 +1,363 @@
-# NoteFlow
+# NoteFlow — Mobile & Web App
 
-Gestor de notas moderno construido con Expo, React Native, Zustand, FlashList y Expo Router.
-Con autenticación Firebase, backend en Next.js, base de datos PostgreSQL y almacenamiento de imágenes en AWS S3.
+[![CI](https://github.com/Josele97-dev/noteflow/actions/workflows/test.yml/badge.svg)](https://github.com/Josele97-dev/noteflow/actions/workflows/test.yml)
+
+Aplicación multiplataforma para gestión de notas, tareas e ideas, construida con Expo, React Native y un backend moderno en Next.js, con sincronización en la nube, notificaciones push, geolocalización y almacenamiento multimedia en AWS. Disponible en Android y web.
 
 ---
 
-## Descripción
+## Demo rápida (GIF)
+
+<p align="center">
+  <img src="./docs/Demo/Demo.gif" width="260" />
+</p>
+
+---
+
+## Demo técnica en Loom
+
+https://www.loom.com/share/559b0b51cdb545b0aa1386e5614d9e7b
+
+---
+
+## Estructura del proyecto
+
+```bash
+noteflow/
+│
+├── .expo/
+├── .github/
+│   └── workflows/
+│       └── test.yml
+├── app/
+│   ├── (auth)/
+│   │   ├── _layout.tsx
+│   │   ├── login.tsx
+│   │   └── register.tsx
+│   ├── (tabs)/
+│   │   ├── _layout.tsx
+│   │   ├── archivados.tsx
+│   │   ├── checklists.tsx
+│   │   ├── ideas.tsx
+│   │   ├── notas.tsx
+│   │   └── perfil.tsx
+│   ├── checklists/
+│   │   ├── editar/
+│   │   │   └── EditTaskScreen.tsx
+│   │   └── [id].tsx
+│   ├── ideas/
+│   │   ├── editar/
+│   │   │   └── EditIdeaScreen.tsx
+│   │   └── [id].tsx
+│   ├── notas/
+│   │   ├── editar/
+│   │   │   └── EditNoteScreen.tsx
+│   │   ├── [id].tsx
+│   │   ├── _layout.tsx
+│   │   ├── crear.tsx
+│   │   └── index.tsx
+│   └── assets/
+│       ├── adaptive-icon.png
+│       ├── favicon.png
+│       ├── icon.png
+│       ├── notification-icon.png
+│       └── splash-icon.png
+│
+├── components/
+│   ├── animations/
+│   │   ├── FadeInDown.tsx
+│   │   └── FadeOutLeft.tsx
+│   ├── archived/
+│   │   └── ArchivedSection.tsx
+│   ├── items/
+│   │   ├── ChecklistCard.tsx
+│   │   ├── IdeaCard.tsx
+│   │   ├── ItemActions.tsx
+│   │   └── NoteCard.tsx
+│   ├── lists/
+│   │   └── BaseList.tsx
+│   └── ui/
+│       ├── DateTimePicker.tsx
+│       └── EditHeader.tsx
+│
+├── constants/
+│   └── theme.ts
+│
+├── docs/
+│   ├── arquitectura/
+│   │   └── Diagrama.png
+│   ├── Demo/
+│   │   └── Demo.gif
+│   ├── adr.md
+│   ├── ai-setup.md
+│   ├── idea.md
+│   ├── project-management.md
+│   └── react-native-teoria.md
+│
+├── hooks/
+│   ├── use-color-scheme.ts
+│   ├── use-color-scheme.web.ts
+│   ├── use-theme-color.ts
+│   └── useExitAnimation.ts
+│
+├── lib/
+│   ├── api.ts
+│   └── firebase.ts
+│
+├── store/
+│   └── notesStore.ts
+│
+├── tests/
+│   ├── screens/
+│   │   ├── checklists.test.tsx
+│   │   ├── ideas.test.tsx
+│   │   └── notas.test.tsx
+│   └── store/
+│       └── notesStore.test.ts
+│
+├── types/
+│   └── index.ts
+│
+├── utils/
+│   └── ideaColors.ts
+│
+├── .gitignore
+├── app.json
+├── babel.config.js
+├── eas.json
+├── eslint.config.js
+├── expo-env.d.ts
+├── google-services.json
+├── jest.config.js
+├── package-lock.json
+├── package.json
+├── README.md
+└── tsconfig.json
+```
+
+---
+
+## Arquitectura
+
+NoteFlow sigue una arquitectura cliente-servidor donde la aplicación actúa como capa de presentación y delega toda la lógica de negocio, la persistencia de datos y el acceso a servicios externos en componentes especializados.
+
+### App (Android y Web)
+
+La aplicación está desarrollada con Expo y React Native, y constituye el punto de entrada principal para los usuarios tanto en Android como en navegador web. Las funcionalidades dependientes del dispositivo (notificaciones y geolocalización) están condicionadas por plataforma mediante guards de `Platform.OS`.
+
+### Vercel (API)
+
+La API serverless desplegada en Vercel actúa como núcleo central de la arquitectura. Recibe todas las peticiones, valida la autenticación y coordina la comunicación con el resto de servicios. Incluye configuración CORS para permitir peticiones desde la versión web.
+
+### Firebase (Auth / Firestore)
+
+Firebase se utiliza para la autenticación de usuarios y para almacenar información básica de perfil. Se usa el SDK web de Firebase (`firebase/auth`, `firebase/firestore`) tanto en móvil como en web, con persistencia de sesión configurada mediante AsyncStorage en Android e indexedDB en web.
+
+### Neon (Database)
+
+Neon proporciona una base de datos PostgreSQL serverless donde se almacena todo el contenido principal de la aplicación, incluyendo notas, checklists, ideas, etiquetas y ubicaciones.
+
+### AWS S3 (Media)
+
+AWS S3 se encarga del almacenamiento de archivos multimedia, incluyendo imágenes de perfil. La API de Vercel gestiona la subida y recuperación mediante URLs firmadas.
+
+### Expo Notifications
+
+Gestiona las notificaciones locales del dispositivo. Solo disponible en móvil — en web se omite el flujo de recordatorio automáticamente.
+
+### Expo Location
+
+Permite acceder a los servicios de geolocalización. Solo disponible en móvil. La ubicación se captura al guardar una entrada y se persiste en PostgreSQL.
+
+### Diagrama de arquitectura
+
+![Diagrama de arquitectura](./docs/arquitectura/Diagrama.png)
+
+### Infraestructura utilizada
+
+| Componente                | Tecnología                 | Despliegue         |
+| ------------------------- | -------------------------- | ------------------ |
+| App Movil                 | Expo / React Native        | EAS / Play Store   |
+| App Web                   | Expo Web                   | localhost / deploy |
+| Backend API               | Next.js 16                 | Vercel             |
+| Base de datos             | PostgreSQL                 | Neon               |
+| Autenticacion             | Firebase Auth (SDK web)    | Firebase           |
+| Perfil de usuario         | Firestore (SDK web)        | Firebase           |
+| Almacenamiento multimedia | AWS S3                     | AWS                |
+| Notificaciones push       | Expo Notifications (movil) | Expo               |
+| Geolocalizacion           | Expo Location (movil)      | Expo               |
+
+---
+
+## Descripcion general
 
 NoteFlow organiza la información en tres tipos de contenido:
 
-- **Notas** — texto libre
-- **Checklists** — listas de tareas
-- **Ideas** — notas rápidas con etiquetas, color y descripción
+- Notas — texto libre con edición completa.
+- Checklists — listas de tareas con progreso.
+- Ideas — notas rápidas con color, etiquetas y descripción.
 
-Cada tipo tiene su propia vista, detalle, flujo de edición y sistema de archivado. Los datos se sincronizan con un backend real y cada usuario ve únicamente sus propios datos.
+Cada tipo tiene su propio flujo de creación, edición, archivado y visualización. Los datos se sincronizan con un backend real y cada usuario accede únicamente a su información, desde cualquier plataforma.
 
 ---
 
-## Características principales
+## Caracteristicas principales
 
-### Autenticación
-- Registro e inicio de sesión con Firebase Auth
-- Sesión persistente
-- Perfil de usuario con nombre, email y foto
-- Foto de perfil desde la galería, almacenada en AWS S3
+### Autenticacion
 
-### Tipos de contenido
+- Registro e inicio de sesión con Firebase Auth (SDK web).
+- Sesión persistente en móvil (AsyncStorage) y web (indexedDB).
+- Perfil con nombre, email y foto.
+- Foto de perfil almacenada en AWS S3.
 
-#### Notas
-- Título, contenido y fecha
-- Vista de detalle
-- Edición completa
-- Eliminación con confirmación
-- Archivado
-- Feedback háptico
+### Notas
 
-#### Checklists
-- Items marcables
-- Barra de progreso
-- Edición de listas e items
-- Archivado
-- Vibración al completar tareas
+- Título, contenido y fecha.
+- Vista de detalle.
+- Edición completa.
+- Archivado y eliminación con confirmación.
+- Feedback háptico (móvil).
 
-#### Ideas
-- Etiquetas dinámicas
-- Color personalizado
-- Edición completa
-- Archivado
-- Organización visual rápida
+### Checklists
 
-### Notificaciones locales
-- Al crear cualquier entrada se ofrece programar un recordatorio
-- El usuario elige fecha y hora con un picker custom sin dependencias nativas
-- La notificación se lanza aunque la app esté cerrada
+- Items marcables.
+- Barra de progreso.
+- Edición de listas e items.
+- Archivado.
+- Vibración al completar tareas (móvil).
 
-### Geolocalización
-- Captura automática de ubicación al crear una entrada
-- La dirección se guarda en la base de datos y persiste entre sesiones
-- Se muestra en el detalle de cada entrada con un chip 📍
+### Ideas
+
+- Etiquetas dinámicas.
+- Color personalizado.
+- Edición completa.
+- Archivado.
+- Organización visual rápida.
+
+### Notificaciones locales (movil)
+
+- Recordatorios programables al crear cualquier entrada.
+- DateTimePicker custom sin dependencias nativas.
+- Funciona incluso con la app cerrada.
+- En web se omite el flujo de recordatorio automáticamente.
+
+### Geolocalizacion (movil)
+
+- Captura automática de ubicación al crear una entrada.
+- Dirección persistente en base de datos.
+- Chip de ubicación en cada detalle.
+
+### Soporte web
+
+- Versión web completamente funcional desde el navegador.
+- Mismo usuario y datos compartidos entre móvil y web.
+- Tema claro y oscuro según preferencia del sistema.
+- Sombras adaptadas con boxShadow para web.
 
 ### Gestos y animaciones
-- Swipe-to-delete en cards — deslizar a la izquierda elimina la entrada
-- Animaciones de entrada escalonadas (FadeInDown) al cargar las listas
-- Animaciones imperativas en pantallas de detalle para evitar parpadeo en Android
+
+- Swipe-to-delete.
+- Animaciones escalonadas (FadeInDown).
+- Animaciones imperativas en pantallas de detalle.
 
 ---
 
 ## Backend
 
-La app consume una API REST propia desplegada en Vercel: https://noteflow-api.vercel.app/
+API REST desplegada en Vercel:
 
-- **Base de datos:** PostgreSQL en Neon
-- **Autenticación:** Firebase Admin SDK
-- **Almacenamiento:** AWS S3 para imágenes
-- **Repositorio:** `noteflow-api`
+```text
+https://noteflow-api.vercel.app/
+```
+
+- Base de datos: PostgreSQL (Neon).
+- Autenticación: Firebase Admin SDK.
+- Almacenamiento: AWS S3.
+- CORS configurado para soporte web.
+- Repositorio: `noteflow-api`.
 
 ---
 
 ## Rendimiento
 
-- FlashList en todas las pantallas
-- Optimización para +50 elementos sin pérdida de FPS
-- Re-render controlado con Zustand
-- Búsqueda en tiempo real sin bloqueos
-- Animaciones en UI thread con Reanimated (no bloquean el JS thread)
+- FlashList en todas las pantallas.
+- Optimizada para +50 elementos sin pérdida de FPS.
+- Re-render controlado con Zustand.
+- Búsqueda en tiempo real.
+- Animaciones en UI Thread con Reanimated.
 
 ---
 
 ## UI / UX
 
-- Tema claro y oscuro automático
-- En modo claro: headers y navegación con color primario azul (`#0A4D9C`)
-- En modo oscuro: headers con color de card para integrarse con el fondo oscuro
-- Sistema de tokens en `constants/theme.ts`
-- Animaciones suaves con Reanimated
-- Interacciones con feedback háptico
-- Estados vacíos personalizados
-- Splash screen con fondo azul primario
-- Icono de notificación personalizado para Android
+- Tema claro y oscuro automático (sistema).
+- Headers adaptados según tema.
+- Sistema de tokens en `constants/theme.ts`.
+- Animaciones suaves.
+- Feedback háptico (móvil).
+- Estados vacíos personalizados.
+- Splash screen con color primario.
+- Icono de notificación personalizado.
 
 ---
 
 ## Estado global
 
-- Zustand como store principal (sin persist)
-- En cada arranque `fetchAll()` hidrata el estado desde la API
-- Cada acción (crear, editar, eliminar) actualiza el estado local y llama a la API
+- Zustand como store principal.
+- `fetchAll()` hidrata el estado en cada arranque.
+- Cada acción sincroniza con la API.
 
 ---
 
-## Navegación
+## Navegacion
 
-- Expo Router
-- Tabs como navegación principal
-- Grupo `(auth)` para login y registro
-- Rutas dinámicas `[id].tsx`
-- Modal para creación de nuevas notas
-- Protección de rutas con Firebase Auth
-
----
-
-## Estructura general del proyecto
-
-```bash
-app/
-  (auth)/
-    _layout.tsx
-    login.tsx
-    register.tsx
-
-  (tabs)/
-    _layout.tsx
-    notas.tsx
-    ideas.tsx
-    checklists.tsx
-    archivados.tsx
-    perfil.tsx
-
-  notas/
-    [id].tsx
-    editar/
-      EditNoteScreen.tsx
-
-  ideas/
-    [id].tsx
-    editar/
-      EditIdeaScreen.tsx
-
-  checklists/
-    [id].tsx
-    editar/
-      EditTaskScreen.tsx
-
-  crear.tsx
-  _layout.tsx
-  index.tsx
-
-components/
-  animations/
-    FadeInDown.tsx
-    FadeOutLeft.tsx
-  archived/
-    ArchivedSection.tsx
-  items/
-    NoteCard.tsx
-    IdeaCard.tsx
-    ChecklistCard.tsx
-    ItemActions.tsx
-  lists/
-    BaseList.tsx
-  ui/
-    EditHeader.tsx
-    DateTimePicker.tsx
-
-constants/
-  theme.ts
-
-docs/
-  ai-setup.md
-  idea.md
-  project-management.md
-  react-native-teoria.md
-
-hooks/
-  useExitAnimation.ts
-
-lib/
-  api.ts
-
-store/
-  notesStore.ts
-
-tests/
-  screens/
-    checklists.test.tsx
-    ideas.test.tsx
-    notas.test.tsx
-  store/
-    notesStore.test.ts
-
-types/
-  index.ts
-
-utils/
-  ideaColors.ts
-```
+- Expo Router.
+- Tabs como navegación principal.
+- Grupo `(auth)` para login/registro.
+- Rutas dinámicas `[id].tsx`.
+- Modal para creación.
+- Protección de rutas con Firebase Auth.
 
 ---
 
 ## Accesibilidad
 
-Se ha mejorado la accesibilidad general de la aplicación para compatibilidad con lectores de pantalla (TalkBack en Android / VoiceOver en iOS).  
-Se añadieron etiquetas semánticas y descripciones a botones, inputs e interacciones clave para mejorar la navegación por voz y la comprensión de la interfaz.
+Compatibilidad con TalkBack (Android) y VoiceOver (iOS).
+
+Etiquetas semánticas, roles y descripciones en botones e inputs.
 
 ---
 
-## Documentación
+## Documentacion
 
-- `idea.md` → concepto del proyecto
-- `project-management.md` → organización en Trello
-- `react-native-teoria.md` → teoría de RN, Expo y rendimiento
-- `ai-setup.md` → herramientas de IA usadas
+- `idea.md` — Concepto del proyecto.
+- `project-management.md` — Trello.
+- `react-native-teoria.md` — Teoría RN/Expo.
+- `ai-setup.md` — Herramientas de IA.
+- `adr.md` — Decisiones de arquitectura.
 
 ---
 
 ## Tablero de Trello
 
+```text
 https://trello.com/b/I1L4Exy8/noteflow
+```
 
 ---
 
-## Tecnologías
+## Tecnologias
 
 - Expo SDK 55
 - React Native 0.76
 - Expo Router
 - Zustand
-- Firebase Auth + Firestore
+- Firebase Auth (SDK web)
+- Firestore (SDK web)
 - Firebase Admin SDK
+- AsyncStorage
 - FlashList
 - Reanimated 3
-- react-native-gesture-handler
 - expo-notifications
 - expo-location
 - Expo Haptics
@@ -251,7 +368,7 @@ https://trello.com/b/I1L4Exy8/noteflow
 
 ---
 
-## Instalación
+## Instalacion
 
 ```bash
 git clone https://github.com/Josele97-dev/noteflow.git
@@ -260,6 +377,14 @@ npm install
 npx expo start
 ```
 
-> La app requiere un build propio — no funciona con Expo Go.  
-> Para desarrollo: `eas build --profile development --platform android`  
-> Para pruebas en dispositivo: `eas build --profile preview --platform android`
+La app en móvil requiere build propio (no funciona en Expo Go).
+
+```bash
+# Desarrollo
+eas build --profile development --platform android
+
+# Pruebas
+eas build --profile preview --platform android
+```
+
+Para la versión web, una vez arrancado el servidor pulsa `w` en la terminal o abre `http://localhost:8081` en el navegador.

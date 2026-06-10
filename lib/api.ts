@@ -1,10 +1,10 @@
-import auth from '@react-native-firebase/auth';
 import { NoteLocation } from '../types';
+import { auth } from './firebase';
 
 const BASE_URL = 'https://noteflow-api.vercel.app/api';
 
 async function getToken() {
-  const user = auth().currentUser;
+  const user = auth.currentUser;
   if (!user) return null;
   return await user.getIdToken();
 }
@@ -134,7 +134,7 @@ export async function updateChecklist(id: string, data: { title?: string; archiv
 }
 
 export async function deleteChecklist(id: string) {
-  const res = await fetch(`${BASE_URL}/notes/${id}`, {
+  const res = await fetch(`${BASE_URL}/checklists/${id}`, {
     method: 'DELETE',
     headers: await authHeaders(),
   });

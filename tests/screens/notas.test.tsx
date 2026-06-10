@@ -21,14 +21,12 @@ import React from 'react';
 import NotasScreen from '../../app/(tabs)/notas';
 import { useNotesStore } from '../../store/notesStore';
 
-// 🔥 Mock tipado de useRouter
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     push: jest.fn(),
   }),
 }));
 
-// 🔥 Mock tipado de NoteCard
 jest.mock('../../components/items/NoteCard', () => {
   const { Text } = require('react-native');
   return ({
@@ -38,7 +36,6 @@ jest.mock('../../components/items/NoteCard', () => {
   }) => <Text>{note.title}</Text>;
 });
 
-// 🔥 Mock tipado de BaseList
 jest.mock('../../components/lists/BaseList', () => {
   const { View, Text } = require('react-native');
 

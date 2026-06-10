@@ -1,6 +1,6 @@
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, { Easing, FadeInDown, FadeOutLeft } from 'react-native-reanimated';
 import { useTheme } from '../../constants/theme';
@@ -22,16 +22,21 @@ export default function ChecklistCard({ checklist, onPress, onDelete, index = 0 
 
   useEffect(() => {
     if (!removing) return;
-    const t = setTimeout(() => onDeleteRef.current?.(), 200);
+    const t = setTimeout(() => onDeleteRef.current?.(), 250);
     return () => clearTimeout(t);
   }, [removing]);
 
   return (
     <Animated.View
       entering={FadeInDown.delay(index * 40).springify()}
-      exiting={FadeOutLeft.duration(200).easing(Easing.out(Easing.cubic))}
+      exiting={FadeOutLeft.duration(250).easing(Easing.out(Easing.cubic))}
       style={removing && { opacity: 0.95 }}>
-      <Swipeable enabled={!removing} friction={1.7} rightThreshold={28} overshootRight={false}
+      <Swipeable
+        enabled={!removing}
+        friction={1.5}
+        rightThreshold={20}
+        overshootRight={false}
+        overshootFriction={1}
         onSwipeableWillOpen={() => setRemoving(true)}
         renderRightActions={() => (
           <View style={[styles.deleteContainer, { backgroundColor: theme.danger }]}>
@@ -57,8 +62,13 @@ export default function ChecklistCard({ checklist, onPress, onDelete, index = 0 
   );
 }
 
+const cardShadow = Platform.select({
+  web: { boxShadow: '0px 2px 8px rgba(0,0,0,0.08)' },
+  default: { shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
+});
+
 const styles = StyleSheet.create({
-  card: { borderRadius: 12, padding: 16, marginHorizontal: 16, marginVertical: 8, borderWidth: 1, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
+  card: { borderRadius: 12, padding: 16, marginHorizontal: 16, marginVertical: 8, borderWidth: 1, ...cardShadow },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
   iconBadge: { width: 28, height: 28, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
   title: { fontSize: 16, fontWeight: '600', flex: 1 },

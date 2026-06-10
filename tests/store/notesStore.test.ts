@@ -54,14 +54,14 @@ describe('notesStore', () => {
     mockedApi.createNote.mockResolvedValue({
       id: '1',
       title: 'Mi nota',
-      content: 'Contenido',
+      content: 'Contenido de prueba',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
 
     await useNotesStore.getState().addNote({
       title: 'Mi nota',
-      content: 'Contenido',
+      content: 'Contenido de prueba',
     });
 
     expect(useNotesStore.getState().notes).toHaveLength(1);
@@ -73,8 +73,8 @@ describe('notesStore', () => {
       notes: [
         {
           id: '1',
-          title: 'Nota',
-          content: '',
+          title: 'Nota para eliminar',
+          content: 'Este contenido desaparecerá',
           archived: false,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -94,8 +94,8 @@ describe('notesStore', () => {
       notes: [
         {
           id: '1',
-          title: '',
-          content: '',
+          title: 'Nota para archivar',
+          content: 'Contenido de la nota',
           archived: false,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -115,8 +115,8 @@ describe('notesStore', () => {
       notes: [
         {
           id: '1',
-          title: '',
-          content: '',
+          title: 'Nota archivada',
+          content: 'Contenido de la nota archivada',
           archived: true,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -134,19 +134,19 @@ describe('notesStore', () => {
   it('addIdea añade una idea', async () => {
     mockedApi.createIdea.mockResolvedValue({
       id: '2',
-      title: 'Idea',
-      content: '',
+      title: 'Idea de negocio',
+      content: 'Descripción de la idea',
       color: '#FFD700',
-      tags: [],
+      tags: ['startup', 'tech'],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
 
     await useNotesStore.getState().addIdea({
-      title: 'Idea',
-      content: '',
+      title: 'Idea de negocio',
+      content: 'Descripción de la idea',
       color: '#FFD700',
-      tags: [],
+      tags: ['startup', 'tech'],
     });
 
     expect(useNotesStore.getState().ideas).toHaveLength(1);
@@ -157,10 +157,10 @@ describe('notesStore', () => {
       ideas: [
         {
           id: '2',
-          title: '',
-          content: '',
-          color: '',
-          tags: [],
+          title: 'Idea para eliminar',
+          content: 'Descripción que desaparecerá',
+          color: '#FF6B6B',
+          tags: ['diseño'],
           archived: false,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -175,18 +175,70 @@ describe('notesStore', () => {
     expect(useNotesStore.getState().ideas).toHaveLength(0);
   });
 
+  it('archiveIdea marca idea como archivada', async () => {
+    useNotesStore.setState({
+      ideas: [
+        {
+          id: '2',
+          title: 'Idea para archivar',
+          content: 'Descripción de la idea',
+          color: '#6C63FF',
+          tags: ['proyecto'],
+          archived: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    });
+
+    mockedApi.updateIdea.mockResolvedValue({});
+
+    await useNotesStore.getState().archiveIdea('2');
+
+    expect(useNotesStore.getState().ideas[0].archived).toBe(true);
+  });
+
+  it('unarchiveIdea desmarca idea como archivada', async () => {
+    useNotesStore.setState({
+      ideas: [
+        {
+          id: '2',
+          title: 'Idea archivada',
+          content: 'Descripción de la idea archivada',
+          color: '#4CAF50',
+          tags: ['pendiente'],
+          archived: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    });
+
+    mockedApi.updateIdea.mockResolvedValue({});
+
+    await useNotesStore.getState().unarchiveIdea('2');
+
+    expect(useNotesStore.getState().ideas[0].archived).toBe(false);
+  });
+
   it('addChecklist añade una tarea', async () => {
     mockedApi.createChecklist.mockResolvedValue({
       id: '3',
-      title: 'Tarea',
-      items: [],
+      title: 'Lista de la compra',
+      items: [
+        { id: 'i1', text: 'Leche', isCompleted: false },
+        { id: 'i2', text: 'Pan', isCompleted: false },
+      ],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
 
     await useNotesStore.getState().addChecklist({
-      title: 'Tarea',
-      items: [],
+      title: 'Lista de la compra',
+      items: [
+        { id: 'i1', text: 'Leche', isCompleted: false },
+        { id: 'i2', text: 'Pan', isCompleted: false },
+      ],
     });
 
     expect(useNotesStore.getState().checklists).toHaveLength(1);
@@ -197,8 +249,8 @@ describe('notesStore', () => {
       checklists: [
         {
           id: '3',
-          title: '',
-          items: [],
+          title: 'Lista para eliminar',
+          items: [{ id: 'i1', text: 'Tarea pendiente', isCompleted: false }],
           archived: false,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -218,8 +270,8 @@ describe('notesStore', () => {
       checklists: [
         {
           id: '3',
-          title: '',
-          items: [],
+          title: 'Lista para archivar',
+          items: [{ id: 'i1', text: 'Tarea completada', isCompleted: true }],
           archived: false,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -232,5 +284,26 @@ describe('notesStore', () => {
     await useNotesStore.getState().archiveChecklist('3');
 
     expect(useNotesStore.getState().checklists[0].archived).toBe(true);
+  });
+
+  it('unarchiveChecklist desmarca tarea como archivada', async () => {
+    useNotesStore.setState({
+      checklists: [
+        {
+          id: '3',
+          title: 'Lista archivada',
+          items: [{ id: 'i1', text: 'Tarea archivada', isCompleted: false }],
+          archived: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    });
+
+    mockedApi.updateChecklist.mockResolvedValue({});
+
+    await useNotesStore.getState().unarchiveChecklist('3');
+
+    expect(useNotesStore.getState().checklists[0].archived).toBe(false);
   });
 });

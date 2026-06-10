@@ -13,7 +13,6 @@ import React from 'react';
 import ChecklistsScreen from '../../app/(tabs)/checklists';
 import { useNotesStore } from '../../store/notesStore';
 
-// 🔥 Mock tipado de ChecklistCard
 jest.mock('../../components/items/ChecklistCard', () => {
   const { Text } = require('react-native');
   return ({
@@ -23,7 +22,6 @@ jest.mock('../../components/items/ChecklistCard', () => {
   }) => <Text>{checklist.title}</Text>;
 });
 
-// 🔥 Mock tipado de BaseList
 jest.mock('../../components/lists/BaseList', () => {
   const { View, Text } = require('react-native');
 
