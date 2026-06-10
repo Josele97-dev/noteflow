@@ -53,9 +53,9 @@ noteflow/
 │   │   ├── editar/
 │   │   │   └── EditNoteScreen.tsx
 │   │   ├── [id].tsx
-│   │   ├── _layout.tsx
-│   │   ├── crear.tsx
-│   │   └── index.tsx
+│   ├── _layout.tsx
+│   ├── crear.tsx
+│   ├── index.tsx
 │   └── assets/
 │       ├── adaptive-icon.png
 │       ├── favicon.png
@@ -151,7 +151,7 @@ La API serverless desplegada en Vercel actúa como núcleo central de la arquite
 
 ### Firebase (Auth / Firestore)
 
-Firebase se utiliza para la autenticación de usuarios y para almacenar información básica de perfil. Se usa el SDK web de Firebase (`firebase/auth`, `firebase/firestore`) tanto en móvil como en web, con persistencia de sesión configurada mediante AsyncStorage en Android e indexedDB en web.
+Firebase se utiliza para la autenticación de usuarios y para almacenar información básica de perfil. Se usa el SDK web de Firebase (`firebase/auth`, `firebase/firestore`) tanto en móvil como en web, con persistencia de sesión configurada mediante AsyncStorage en Android e indexedDB en web. Las claves de Firebase se gestionan mediante variables de entorno (.env) y no se incluyen en el repositorio.
 
 ### Neon (Database)
 
@@ -368,23 +368,107 @@ https://trello.com/b/I1L4Exy8/noteflow
 
 ---
 
-## Instalacion
+# Configuración obligatoria antes de ejecutar el proyecto
 
-```bash
+NoteFlow requiere configuración previa para funcionar correctamente. Sin estas variables, la aplicación no podrá iniciar sesión ni comunicarse con el backend.
+
+## Archivo .env
+
+Crear un archivo `.env` en la raíz del proyecto:
+
+``` bash
+touch .env
+```
+
+## Archivo .env.example
+
+Debe incluirse en el repositorio:
+
+``` env
+EXPO_PUBLIC_FIREBASE_API_KEY=
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+EXPO_PUBLIC_FIREBASE_APP_ID=
+
+EXPO_PUBLIC_API_BASE_URL=
+```
+
+# Configuración de Firebase
+
+Acceder a:
+
+https://console.firebase.google.com
+
+Pasos:
+
+1.  Crear un proyecto.
+2.  Añadir una aplicación Web.
+3.  Copiar las claves del SDK.
+4.  Pegarlas en `.env`.
+
+## Configuración del Backend
+
+Backend oficial:
+
+``` env
+EXPO_PUBLIC_API_BASE_URL=https://noteflow-api.vercel.app
+```
+
+Si se usa backend propio, sustituir la URL.
+
+## Configuración de AWS S3 (solo backend propio)
+
+El backend requiere:
+
+-   Bucket S3.
+-   Política pública de lectura.
+-   IAM con permisos de subida.
+
+Variables necesarias en backend:
+
+``` env
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_BUCKET_NAME=
+```
+
+El frontend no necesita claves de AWS.
+
+## Instalación
+
+Es obligatorio crear `.env` antes de iniciar el proyecto.
+
+``` bash
 git clone https://github.com/Josele97-dev/noteflow.git
 cd noteflow
+cp .env.example .env
 npm install
 npx expo start
 ```
 
-La app en móvil requiere build propio (no funciona en Expo Go).
+# Builds móviles
 
-```bash
-# Desarrollo
+``` bash
 eas build --profile development --platform android
-
-# Pruebas
 eas build --profile preview --platform android
 ```
 
-Para la versión web, una vez arrancado el servidor pulsa `w` en la terminal o abre `http://localhost:8081` en el navegador.
+# Versión web
+
+Una vez arrancado el servidor:
+
+Pulsar:
+
+``` text
+w
+```
+
+en la terminal.
+
+O abrir:
+
+``` text
+http://localhost:8081
+```
