@@ -9,12 +9,16 @@ Aplicación multiplataforma para gestión de notas, tareas e ideas, construida c
 ## Demo rápida (GIF)
 
 <p align="center">
-  <img src="./docs/Demo/Demo.gif" width="260" />
+  <a href="https://www.loom.com/share/559b0b51cdb545b0aa1386e5614d9e7b">
+    Ver demo técnica en Loom
+  </a>
 </p>
+
 
 ---
 
 ## Demo técnica en Loom
+
 
 https://www.loom.com/share/559b0b51cdb545b0aa1386e5614d9e7b
 
