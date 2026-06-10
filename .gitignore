@@ -32,6 +32,7 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
 
 # typescript
 *.tsbuildinfo
@@ -41,3 +42,10 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Firebase native config (no se usa en Expo Web SDK)
+google-services.json
+GoogleService-Info.plist
+
+# Ignorar firebase.ts para evitar leaks accidentales
+lib/firebase.ts
